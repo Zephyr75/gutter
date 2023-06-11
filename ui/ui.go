@@ -10,11 +10,11 @@ import (
   "gutter/utils"
 )
 
-type ScaleType byte
+type ScaleType bool
 
 const (
-	ScalePixel    ScaleType = 0
-	ScaleRelative ScaleType = 1
+	ScalePixel    ScaleType = true
+	ScaleRelative ScaleType = false
 )
 
 /*
@@ -85,16 +85,30 @@ type Size struct {
 type UIElement interface {
 	Draw(img *image.RGBA, window *glfw.Window)
 	SetProperties(size Size, center Point)
+  GetProperties() Properties
 	Debug()
 }
 
 type Properties struct {
-	MaxSize   Size
 	Center    Point
 	Size      Size
 	Alignment Alignment
 	Padding   Padding
-	Function   func()
+	Function  func()
+  Parent    *UIElement
+}
+
+func DefaultProperties() Properties {
+  screenSize := Size{ScalePixel, utils.RESOLUTION_X, utils.RESOLUTION_Y}
+  screenCenter := Point{utils.RESOLUTION_X / 2, utils.RESOLUTION_Y / 2}
+  return Properties{
+    Center: screenCenter,
+    Size: screenSize,
+    Alignment: AlignmentCenter,
+    Padding: PaddingEqual(ScalePixel, 0),
+    Function: nil,
+    Parent: nil,
+  }
 }
 
 type Style struct {
@@ -112,10 +126,10 @@ type Point struct {
 	Y int
 }
 
-func Draw(img *image.RGBA, window *glfw.Window, props *Properties, style Style) {
-	maxWidth, maxHeight := GetMaxDimensions(props, window)
-	width, height := GetDimensions(props, maxWidth, maxHeight)
-	centerX, centerY := GetCenter(props, width, height, maxWidth, maxHeight)
+func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style) {
+	// maxWidth, maxHeight := GetMaxDimensions(props, window)
+	width, height := GetScreenSize(props)
+	centerX, centerY := GetScreenCenter(props)
 
 	x, y := window.GetCursorPos()
 
@@ -172,68 +186,66 @@ func Draw(img *image.RGBA, window *glfw.Window, props *Properties, style Style) 
 // }
 
 
-func GetDimensions(props *Properties, maxWidth, maxHeight int) (int, int) {
-	if props.Size.Width == 0 || props.Size.Height == 0 {
-		props.Size.Width = props.MaxSize.Width
-		props.Size.Height = props.MaxSize.Height
-		props.Size.Scale = ScalePixel
-	}
+func GetScreenSize(props Properties) (int, int) {
 
 	width := props.Size.Width
 	height := props.Size.Height
 	if props.Size.Scale == ScaleRelative {
-		width = maxWidth * props.Size.Width / 100
-		height = maxHeight * props.Size.Height / 100
+    parentProps := (*props.Parent).GetProperties()
+	  widthParent := parentProps.Size.Width
+    heightParent := parentProps.Size.Height
+    width = widthParent * props.Size.Width / 100
+    height = heightParent * props.Size.Height / 100
 	}
 
-	if props.Padding.Scale == ScaleRelative {
-		height -= (maxHeight * props.Padding.Top / 100) + (maxHeight * props.Padding.Bottom / 100)
-		width -= (maxWidth * props.Padding.Left / 100) + (maxWidth * props.Padding.Right / 100)
-	} else {
-		height -= props.Padding.Top + props.Padding.Bottom
-		width -= props.Padding.Left + props.Padding.Right
-	}
+	// if props.Padding.Scale == ScaleRelative {
+	// 	height -= (maxHeight * props.Padding.Top / 100) + (maxHeight * props.Padding.Bottom / 100)
+	// 	width -= (maxWidth * props.Padding.Left / 100) + (maxWidth * props.Padding.Right / 100)
+	// } else {
+	// 	height -= props.Padding.Top + props.Padding.Bottom
+	// 	width -= props.Padding.Left + props.Padding.Right
+	// }
 
 	return width, height
 }
 
-func GetCenter(props *Properties, width, height, maxWidth, maxHeight int) (int, int) {
+func GetScreenCenter(props Properties) (int, int) {
 	centerX := props.Center.X
 	centerY := props.Center.Y
 	
-	switch props.Alignment {
-	case AlignmentBottom:
-		centerY -= height/2 - maxHeight/2
-	case AlignmentTop:
-		centerY += height/2 - maxHeight/2
-	case AlignmentLeft:
-		centerX += width/2 - maxWidth/2
-	case AlignmentRight:
-		centerX -= width/2 - maxWidth/2
-	case AlignmentTopLeft:
-		centerX += width/2 - maxWidth/2
-		centerY += height/2 - maxHeight/2
-	case AlignmentTopRight:
-		centerX -= width/2 - maxWidth/2
-		centerY += height/2 - maxHeight/2
-	case AlignmentBottomLeft:
-		centerX += width/2 - maxWidth/2
-		centerY -= height/2 - maxHeight/2
-	case AlignmentBottomRight:
-		centerX -= width/2 - maxWidth/2
-		centerY -= height/2 - maxHeight/2
-	}
+	// switch props.Alignment {
+	// case AlignmentBottom:
+	// 	centerY -= height/2 - maxHeight/2
+	// case AlignmentTop:
+	// 	centerY += height/2 - maxHeight/2
+	// case AlignmentLeft:
+	// 	centerX += width/2 - maxWidth/2
+	// case AlignmentRight:
+	// 	centerX -= width/2 - maxWidth/2
+	// case AlignmentTopLeft:
+	// 	centerX += width/2 - maxWidth/2
+	// 	centerY += height/2 - maxHeight/2
+	// case AlignmentTopRight:
+	// 	centerX -= width/2 - maxWidth/2
+	// 	centerY += height/2 - maxHeight/2
+	// case AlignmentBottomLeft:
+	// 	centerX += width/2 - maxWidth/2
+	// 	centerY -= height/2 - maxHeight/2
+	// case AlignmentBottomRight:
+	// 	centerX -= width/2 - maxWidth/2
+	// 	centerY -= height/2 - maxHeight/2
+	// }
 
-	if props.Padding.Scale == ScaleRelative {
-		centerX += (maxWidth * props.Padding.Left / 100) - (maxWidth * props.Padding.Right / 100)
-		centerY += (maxHeight * props.Padding.Top / 100) - (maxHeight * props.Padding.Bottom / 100)
-	} else {
-		centerX += props.Padding.Left - props.Padding.Right
-		centerY += props.Padding.Top - props.Padding.Bottom
-	}
+	// if props.Padding.Scale == ScaleRelative {
+	// 	centerX += (maxWidth * props.Padding.Left / 100) - (maxWidth * props.Padding.Right / 100)
+	// 	centerY += (maxHeight * props.Padding.Top / 100) - (maxHeight * props.Padding.Bottom / 100)
+	// } else {
+	// 	centerX += props.Padding.Left - props.Padding.Right
+	// 	centerY += props.Padding.Top - props.Padding.Bottom
+	// }
 
-	centerX -= width / 2
-	centerY -= height / 2
+	// centerX -= width / 2
+	// centerY -= height / 2
 
 	return centerX, centerY
 }

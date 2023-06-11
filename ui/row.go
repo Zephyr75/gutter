@@ -8,36 +8,93 @@ import (
 )
 
 type Row struct {
-	Properties *Properties
+	Properties Properties
 	Style	   Style
 	Children   []UIElement
 }
 
 func (row Row) Draw(img *image.RGBA, window *glfw.Window) {
+  row.Properties = DefaultProperties() 
 	
 	Draw(img, window, row.Properties, row.Style)
 
-	for child := range row.Children {
-		
-		row.Children[child].SetProperties(
-			Size{
-				Scale:  row.Properties.Size.Scale,
-				Width:  row.Properties.Size.Width / len(row.Children),
-				Height: row.Properties.Size.Height,
-			},
-			Point{
-				X: row.Properties.Center.X - row.Properties.MaxSize.Width/2 + (2*child+1)*row.Properties.MaxSize.Width/(len(row.Children)*2),
-				Y: row.Properties.Center.Y,
-			},
-		)
-		row.Children[child].Draw(img, window)
+  availableWidth := row.Properties.Size.Width
+
+  // Compute the available width
+	for _, child := range row.Children {
+    childProps := child.GetProperties()
+    if childProps.Size.Scale == ScalePixel { 
+      availableWidth -= childProps.Size.Width
+    }
 	}
+
+  // Compute the total percentage of width required by the children
+  childrenWidth := 0
+  for _, child := range row.Children {
+    childProps := child.GetProperties()
+    if childProps.Size.Scale == ScaleRelative { 
+      childrenWidth += childProps.Size.Width
+    }
+  }
+
+  if childrenWidth == 0 {
+   childrenWidth = 1
+  }
+
+  // Compute the width of each child
+  for _, child := range row.Children {
+    childProps := child.GetProperties()
+    if childProps.Size.Scale == ScaleRelative { 
+      child.SetProperties(
+        Size{
+          Scale:  childProps.Size.Scale,
+          Width:  childProps.Size.Width * availableWidth / childrenWidth,
+          Height: childProps.Size.Height,
+        },
+        Point{
+          X: childProps.Center.X,
+          Y: childProps.Center.Y,
+        },
+      )
+    }
+  }
+
+  // Compute the center of each child
+  currentX := row.Properties.Center.X - row.Properties.Size.Width / 2
+  for _, child := range row.Children {
+    childProps := child.GetProperties()
+    pixelWidth := childProps.Size.Width
+    if childProps.Size.Scale == ScaleRelative {
+      pixelWidth = childProps.Size.Width * availableWidth / childrenWidth
+    }
+    child.SetProperties(
+      Size{
+        Scale:  childProps.Size.Scale,
+        Width:  childProps.Size.Width,
+        Height: childProps.Size.Height,
+      },
+      Point{
+        X: currentX + pixelWidth / 2,
+        Y: childProps.Center.Y,
+      },
+    )
+    child.Draw(img, window)
+    currentX += pixelWidth
+  }
+
+
+
+
 }
 
 
 func (row Row) SetProperties(size Size, center Point) {
-	row.Properties.MaxSize = size
+	row.Properties.Size = size
 	row.Properties.Center = center
+}
+
+func (row Row) GetProperties() Properties {
+  return row.Properties
 }
 
 func (row Row) Debug() {
