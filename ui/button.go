@@ -28,6 +28,8 @@ func (button Button) Draw(img *image.RGBA, window *glfw.Window) {
     button = button.Initialize().(Button)
   }
 
+  button = ApplyRelative(button).(Button)
+
   button = ApplyPadding(button).(Button)
 
 

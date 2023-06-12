@@ -30,6 +30,8 @@ func (row Row) Draw(img *image.RGBA, window *glfw.Window) {
     row = row.Initialize().(Row)
   }
 
+  row = ApplyRelative(row).(Row)
+
   row = ApplyPadding(row).(Row)
 
 

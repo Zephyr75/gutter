@@ -190,25 +190,25 @@ func main() {
 
         parent.Draw(img, window)
 
-        // exit := ui.Button{
-        //   Properties: ui.Properties{
-        //     Alignment: ui.AlignmentTopLeft,
-        //     Padding: ui.PaddingEqual(ui.ScaleRelative, 25), 
-        //     Size: ui.Size{
-        //       Scale:  ui.ScaleRelative,
-        //       Width:  100,
-        //       Height: 100,
-        //     },
-        //     Function: func() {
-        //       window.SetShouldClose(true)
-        //     },
-        //   },
-        //   Style: ui.Style{
-        //     Color: color.RGBA{255, 255, 255, 255},
-        //   },
-        // }
+        exit := ui.Button{
+          Properties: ui.Properties{
+            Alignment: ui.AlignmentTopLeft,
+            Padding: ui.PaddingEqual(ui.ScaleRelative, 25), 
+            Size: ui.Size{
+              Scale:  ui.ScaleRelative,
+              Width:  100,
+              Height: 100,
+            },
+            Function: func() {
+              window.SetShouldClose(true)
+            },
+          },
+          Style: ui.Style{
+            Color: color.RGBA{255, 255, 255, 255},
+          },
+        }
 
-        // exit.Draw(img, window)
+        exit.Draw(img, window)
 
         // window.SetShouldClose(true)
 

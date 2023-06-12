@@ -261,10 +261,6 @@ func ApplyPadding(element UIElement) UIElement {
 
   oldWidth := props.Size.Width
   oldHeight := props.Size.Height
-  // if props.Size.Scale == ScaleRelative {
-  //   oldWidth = props.Parent.Size.Width * oldWidth / 100
-  //   oldHeight = props.Parent.Size.Height * oldHeight / 100
-  // }
 
   horizPadding := props.Padding.Left + props.Padding.Right
   vertPadding := props.Padding.Top + props.Padding.Bottom
@@ -280,6 +276,20 @@ func ApplyPadding(element UIElement) UIElement {
   newCenter := Point{props.Center.X + horizOffset / 2, props.Center.Y + vertOffset / 2}
   // newCenter := Point{props.Center.X, props.Center.Y}
   return element.SetProperties(newSize, newCenter)
+}
+
+
+func ApplyRelative(element UIElement) UIElement {
+  props := element.GetProperties()
+  parent := props.Parent
+  newWidth := props.Size.Width
+  newHeight := props.Size.Height
+  if props.Size.Scale == ScaleRelative {
+    newWidth = parent.Size.Width * props.Size.Width / 100
+    newHeight = parent.Size.Height * props.Size.Height / 100
+  }
+  newSize := Size{ScalePixel, newWidth, newHeight}
+  return element.SetProperties(newSize, props.Center)
 }
 
 

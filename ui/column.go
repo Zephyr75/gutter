@@ -30,6 +30,8 @@ func (column Column) Draw(img *image.RGBA, window *glfw.Window) {
     column = column.Initialize().(Column)
   }
 
+  column = ApplyRelative(column).(Column)
+
   column = ApplyPadding(column).(Column)
 
   // fmt.Println("Column")
