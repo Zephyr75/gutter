@@ -217,42 +217,7 @@ func GetScreenSize(props Properties) (int, int) {
 func GetScreenCenter(props Properties) (int, int) {
 	centerX := props.Center.X
 	centerY := props.Center.Y
-	
-	// switch props.Alignment {
-	// case AlignmentBottom:
-	// 	centerY -= height/2 - maxHeight/2
-	// case AlignmentTop:
-	// 	centerY += height/2 - maxHeight/2
-	// case AlignmentLeft:
-	// 	centerX += width/2 - maxWidth/2
-	// case AlignmentRight:
-	// 	centerX -= width/2 - maxWidth/2
-	// case AlignmentTopLeft:
-	// 	centerX += width/2 - maxWidth/2
-	// 	centerY += height/2 - maxHeight/2
-	// case AlignmentTopRight:
-	// 	centerX -= width/2 - maxWidth/2
-	// 	centerY += height/2 - maxHeight/2
-	// case AlignmentBottomLeft:
-	// 	centerX += width/2 - maxWidth/2
-	// 	centerY -= height/2 - maxHeight/2
-	// case AlignmentBottomRight:
-	// 	centerX -= width/2 - maxWidth/2
-	// 	centerY -= height/2 - maxHeight/2
-	// }
-
-	// if props.Padding.Scale == ScaleRelative {
-	// 	centerX += (maxWidth * props.Padding.Left / 100) - (maxWidth * props.Padding.Right / 100)
-	// 	centerY += (maxHeight * props.Padding.Top / 100) - (maxHeight * props.Padding.Bottom / 100)
-	// } else {
-	// 	centerX += props.Padding.Left - props.Padding.Right
-	// 	centerY += props.Padding.Top - props.Padding.Bottom
-	// }
-
-	// centerX -= width / 2
-	// centerY -= height / 2
-
-	return centerX, centerY
+  return centerX, centerY
 }
 
 

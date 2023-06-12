@@ -16,10 +16,6 @@ type Row struct {
 
 func (row Row) Initialize() UIElement {
   row.Properties = DefaultProperties(row.Properties)
-  for i, child := range row.Children {
-    child = child.SetParent(&row.Properties)
-    row.Children[i] = child.Initialize()
-  }
   return row
 }
 
@@ -36,7 +32,10 @@ func (row Row) Draw(img *image.RGBA, window *glfw.Window) {
 
   row = ApplyPadding(row).(Row)
 
-
+  for i, child := range row.Children {
+    child = child.SetParent(&row.Properties)
+    row.Children[i] = child.Initialize()
+  }
 	
 	Draw(img, window, row.Properties, row.Style)
 

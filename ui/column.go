@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"fmt"
+	// "fmt"
 	"image"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -16,10 +16,6 @@ type Column struct {
 
 func (column Column) Initialize() UIElement {
   column.Properties = DefaultProperties(column.Properties)
-  for i, child := range column.Children {
-    child = child.SetParent(&column.Properties)
-    column.Children[i] = child.Initialize()
-  }
   return column
 }
 
@@ -36,8 +32,13 @@ func (column Column) Draw(img *image.RGBA, window *glfw.Window) {
 
   column = ApplyPadding(column).(Column)
 
+  for i, child := range column.Children {
+    child = child.SetParent(&column.Properties)
+    column.Children[i] = child.Initialize()
+  }
+
   // fmt.Println("Column")
-  fmt.Println(column.Properties)
+  // fmt.Println(column.Properties)
 	
 	Draw(img, window, column.Properties, column.Style)
 

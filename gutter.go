@@ -92,13 +92,14 @@ func main() {
           },
           Children: []ui.UIElement{
             ui.Button{
-              // Properties: ui.Properties{
-              //   Size: ui.Size{
-              //     Scale:  ui.ScalePixel,
-              //     Width:  100,
-              //     Height: 100,
-              //   }, 
-              // },
+              Properties: ui.Properties{
+                Alignment: ui.AlignmentBottom,
+                Size: ui.Size{
+                  Scale:  ui.ScalePixel,
+                  Width:  100,
+                  Height: 100,
+                }, 
+              },
               Style: ui.Style{
                 Color: green,
               },
@@ -120,7 +121,7 @@ func main() {
                     },
                   },
                   Style: ui.Style{
-                    Color: blue,
+                    Color: green,
                   },
                 },
                 ui.Button{
@@ -162,12 +163,23 @@ func main() {
             //   },
             // },
             ui.Button{
-              // Properties: ui.Properties{
-              //   Alignment: ui.AlignmentCenter,
-              // },
               Style: ui.Style{
                 Color: red,
               },
+              Child: ui.Button{
+                Properties: ui.Properties{
+                  Size: ui.Size{
+                    Scale:  ui.ScaleRelative,
+                    Width:  50,
+                    Height: 50,
+                  },
+                  Alignment: ui.AlignmentRight,
+                },
+                Style: ui.Style{
+                  Color: blue,
+                },
+              },
+
               // Child: ui.Text{
               //   Properties: &ui.Properties{
               //     Alignment: ui.AlignmentCenter,
@@ -209,6 +221,10 @@ func main() {
         }
 
         exit.Draw(img, window)
+
+
+
+
 
         // window.SetShouldClose(true)
 

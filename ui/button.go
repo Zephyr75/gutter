@@ -1,7 +1,7 @@
 package ui
 
 import (
-	// "fmt"
+	"fmt"
 	"image"
 	// "image/color"
 
@@ -21,8 +21,15 @@ func (button Button) Initialize() UIElement {
 }
 
 func (button Button) Draw(img *image.RGBA, window *glfw.Window) {
-  // fmt.Println("--------------------")
-  // fmt.Println(button)
+
+  // get color
+  _, _, b, _ := button.Style.Color.RGBA()
+
+  if b > 200 {
+    fmt.Println("--------------------")
+    fmt.Println(button.Properties.Parent)
+    fmt.Println(button)
+  }
 
   if !button.Properties.Initialized {
     button = button.Initialize().(Button)
@@ -34,18 +41,22 @@ func (button Button) Draw(img *image.RGBA, window *glfw.Window) {
 
   button = ApplyPadding(button).(Button)
 
+  if button.Child != nil {
+    button.Child = button.Child.SetParent(&button.Properties)
+    button.Child = button.Child.Initialize()
+  }
 
-
-
-
-  // fmt.Println(button)
+  if b > 200 {
+    fmt.Println(button)
+  }
 
 	Draw(img, window, button.Properties, button.Style)
 	
-	// if button.Child != nil {
-	// 	button.Child.SetProperties(button.Properties.Size, button.Properties.Center)
-	// 	button.Child.Draw(img, window)
-	// }
+	if button.Child != nil {
+    props := button.Child.GetProperties()
+		button.Child.SetProperties(props.Size, button.Properties.Center)
+		button.Child.Draw(img, window)
+	}
 }
 
 
