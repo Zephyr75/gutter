@@ -129,13 +129,14 @@ func DefaultProperties(props Properties) Properties {
       Initialized: true,
     }
   }
+
     
   return Properties{
     Center: newCenter,
     Size: newSize,
-    Alignment: AlignmentCenter,
-    Padding: PaddingEqual(ScalePixel, 0),
-    Function: nil,
+    Alignment: props.Alignment,
+    Padding: props.Padding,
+    Function: props.Function,
     Parent: newParent,
     Initialized: true,
   }
@@ -194,6 +195,22 @@ func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style) {
         trueI := centerX - width/2 + i
 				trueJ := centerY - height/2 + j
 
+        if props.Padding.Scale == ScaleRelative {
+          parent := props.Parent
+          widthParent := parent.Size.Width
+          heightParent := parent.Size.Height
+          if i < props.Padding.Left * widthParent / 100 ||
+             i > width - props.Padding.Right * widthParent / 100 || 
+             j < props.Padding.Top * heightParent / 100 || 
+             j > height - props.Padding.Bottom * heightParent / 100 { 
+            continue
+          }
+        } else if props.Padding.Scale == ScalePixel {
+          if i < props.Padding.Left || i > width - props.Padding.Right || j < props.Padding.Top || j > height - props.Padding.Bottom {
+            continue
+          }
+        }
+
 				img.Set(trueI, trueJ, color.RGBA{byte(r), byte(g), byte(b), 255})
 			}
 			wg.Done()
@@ -202,46 +219,14 @@ func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style) {
 	wg.Wait()
 }
 
-// func GetMaxDimensions(props *Properties, window *glfw.Window) (int, int) {
-// 	var w, h = window.GetSize()
-
-// 	if props.MaxSize.Width == 0 || props.MaxSize.Height == 0 {
-// 		props.MaxSize.Width = w
-// 		props.MaxSize.Height = h
-// 		props.MaxSize.Scale = ScalePixel
-// 	}
-
-// 	maxWidth := props.MaxSize.Width
-// 	maxHeight := props.MaxSize.Height
-// 	if props.MaxSize.Scale == ScaleRelative {
-// 		maxWidth = w * props.MaxSize.Width / 100
-// 		maxHeight = h * props.MaxSize.Height / 100
-// 	}
-
-// 	return maxWidth, maxHeight
-// }
-
-
 func GetScreenSize(props Properties) (int, int) {
-
 	width := props.Size.Width
 	height := props.Size.Height
 	if props.Size.Scale == ScaleRelative {
     parentProps := props.Parent
-	  widthParent := parentProps.Size.Width
-    heightParent := parentProps.Size.Height
-    width = widthParent * props.Size.Width / 100
-    height = heightParent * props.Size.Height / 100
+    width = parentProps.Size.Width * props.Size.Width / 100
+    height = parentProps.Size.Height * props.Size.Height / 100
 	}
-
-	// if props.Padding.Scale == ScaleRelative {
-	// 	height -= (maxHeight * props.Padding.Top / 100) + (maxHeight * props.Padding.Bottom / 100)
-	// 	width -= (maxWidth * props.Padding.Left / 100) + (maxWidth * props.Padding.Right / 100)
-	// } else {
-	// 	height -= props.Padding.Top + props.Padding.Bottom
-	// 	width -= props.Padding.Left + props.Padding.Right
-	// }
-
 	return width, height
 }
 

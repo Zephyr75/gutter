@@ -63,10 +63,8 @@ func main() {
 
 
     ///
-      
     i := 0
     time := glfw.GetTime()
-
     ///
 
 
@@ -233,29 +231,25 @@ func main() {
 
         parent.Draw(img, window)
 
-        // exit := ui.Button{
-        //   Properties: ui.Properties{
-        //     Center: ui.Point{
-        //       X: w / 2,
-        //       Y: h / 2,
-        //     },
-        //     Alignment: ui.AlignmentTopLeft,
-        //     Size: ui.Size{
-        //       Scale:  ui.ScalePixel,
-        //       Width:  100,
-        //       Height: 50,
-        //     },
-        //     Function: func() {
-        //       fmt.Println("Exit")
-        //       window.SetShouldClose(true)
-        //     },
-        //   },
-        //   Style: ui.Style{
-        //     Color: color.RGBA{255, 255, 255, 255},
-        //   },
-        // }
+        exit := ui.Button{
+          Properties: ui.Properties{
+            Alignment: ui.AlignmentTopLeft,
+            Padding: ui.PaddingSymmetric(ui.ScaleRelative, 0, 25), 
+            Size: ui.Size{
+              Scale:  ui.ScaleRelative,
+              Width:  100,
+              Height: 50,
+            },
+            Function: func() {
+              window.SetShouldClose(true)
+            },
+          },
+          Style: ui.Style{
+            Color: color.RGBA{255, 255, 255, 255},
+          },
+        }
 
-        // exit.Draw(img, window)
+        exit.Draw(img, window)
 
         // window.SetShouldClose(true)
 
