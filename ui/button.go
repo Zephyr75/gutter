@@ -30,7 +30,11 @@ func (button Button) Draw(img *image.RGBA, window *glfw.Window) {
 
   button = ApplyRelative(button).(Button)
 
+  button = ApplyAlignment(button).(Button)
+
   button = ApplyPadding(button).(Button)
+
+
 
 
 

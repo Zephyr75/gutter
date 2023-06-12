@@ -172,13 +172,13 @@ func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style) {
 
 	if x > float64(centerX - width/2) && x < float64(centerX + width/2) && y > float64(centerY - height/2) && y < float64(centerY + height/2) {
 		if r % 255 > 30 {
-			r -= 30
+			r = 0
 		}
 		if g % 255 > 30 {
-			g -= 30
+			g = 0
 		}
 		if b % 255 > 30 {
-			b -= 30
+			b = 0
 		}
 		if window.GetMouseButton(glfw.MouseButtonLeft) == glfw.Press {
 			if props.Function != nil {
@@ -276,6 +276,40 @@ func ApplyPadding(element UIElement) UIElement {
   newCenter := Point{props.Center.X + horizOffset / 2, props.Center.Y + vertOffset / 2}
   // newCenter := Point{props.Center.X, props.Center.Y}
   return element.SetProperties(newSize, newCenter)
+}
+
+func ApplyAlignment(element UIElement) UIElement {
+  props := element.GetProperties()
+  parent := props.Parent
+  newX := props.Center.X
+  newY := props.Center.Y
+  
+  switch props.Alignment {
+  case AlignmentBottom:
+    newY = parent.Center.Y + parent.Size.Height / 2 - props.Size.Height / 2
+  case AlignmentTop:
+    newY = parent.Center.Y - parent.Size.Height / 2 + props.Size.Height / 2
+  case AlignmentLeft:
+    newX = parent.Center.X - parent.Size.Width / 2 + props.Size.Width / 2
+  case AlignmentRight:
+    newX = parent.Center.X + parent.Size.Width / 2 - props.Size.Width / 2
+  case AlignmentTopLeft:
+    newX = parent.Center.X - parent.Size.Width / 2 + props.Size.Width / 2
+    newY = parent.Center.Y - parent.Size.Height / 2 + props.Size.Height / 2
+  case AlignmentTopRight:
+    newX = parent.Center.X + parent.Size.Width / 2 - props.Size.Width / 2
+    newY = parent.Center.Y - parent.Size.Height / 2 + props.Size.Height / 2
+  case AlignmentBottomLeft:
+    newX = parent.Center.X - parent.Size.Width / 2 + props.Size.Width / 2
+    newY = parent.Center.Y + parent.Size.Height / 2 - props.Size.Height / 2
+  case AlignmentBottomRight:
+    newX = parent.Center.X + parent.Size.Width / 2 - props.Size.Width / 2
+    newY = parent.Center.Y + parent.Size.Height / 2 - props.Size.Height / 2
+  }
+
+  newCenter := Point{newX, newY}
+
+  return element.SetProperties(props.Size, newCenter)
 }
 
 

@@ -193,11 +193,11 @@ func main() {
         exit := ui.Button{
           Properties: ui.Properties{
             Alignment: ui.AlignmentTopLeft,
-            Padding: ui.PaddingEqual(ui.ScaleRelative, 25), 
+            // Padding: ui.PaddingEqual(ui.ScaleRelative, 25), 
             Size: ui.Size{
               Scale:  ui.ScaleRelative,
-              Width:  100,
-              Height: 100,
+              Width:  10,
+              Height: 10,
             },
             Function: func() {
               window.SetShouldClose(true)
