@@ -15,10 +15,14 @@ type Button struct {
 	Child      UIElement
 }
 
+func (button Button) Initialize() UIElement {
+  button.Properties = DefaultProperties()
+  return button
+}
 
 func (button Button) Draw(img *image.RGBA, window *glfw.Window) {
 
-  button.Properties = DefaultProperties() 
+  button = button.Initialize().(Button)
 
 	Draw(img, window, button.Properties, button.Style)
 	

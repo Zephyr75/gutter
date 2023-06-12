@@ -87,6 +87,7 @@ type UIElement interface {
 	SetProperties(size Size, center Point)
   GetProperties() Properties
 	Debug()
+  Initialize() UIElement
 }
 
 type Properties struct {
@@ -100,6 +101,8 @@ type Properties struct {
 
 func DefaultProperties() Properties {
   screenSize := Size{ScalePixel, utils.RESOLUTION_X, utils.RESOLUTION_Y}
+
+  // screenSize := Size{ScaleRelative, 100, 100}
   screenCenter := Point{utils.RESOLUTION_X / 2, utils.RESOLUTION_Y / 2}
   return Properties{
     Center: screenCenter,

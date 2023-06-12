@@ -1,10 +1,12 @@
-
 package ui
 
 import (
+	"fmt"
 	"image"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
+
+  "gutter/utils"
 )
 
 type Row struct {
@@ -13,16 +15,50 @@ type Row struct {
 	Children   []UIElement
 }
 
+func (row Row) Initialize() UIElement {
+  row.Properties = DefaultProperties()
+
+  // row.Properties.Size = Size{
+  //   Scale:  ScalePixel,
+  //   Width:  utils.RESOLUTION_X,
+  //   Height: utils.RESOLUTION_Y,
+  // }
+    
+
+
+  for i, child := range row.Children {
+    row.Children[i] = child.Initialize()
+  }
+  return row
+}
+
 func (row Row) Draw(img *image.RGBA, window *glfw.Window) {
-  row.Properties = DefaultProperties() 
+
+
+  row = row.Initialize().(Row)
+
 	
 	Draw(img, window, row.Properties, row.Style)
 
   availableWidth := row.Properties.Size.Width
+  fmt.Println("availableWidth: ", availableWidth)
+
+  for _, child := range row.Children {
+
+    screenSize := Size{ScalePixel, utils.RESOLUTION_X, utils.RESOLUTION_Y}
+    screenCenter := Point{utils.RESOLUTION_X / 2, utils.RESOLUTION_Y / 2}
+
+
+    child.SetProperties(screenSize, screenCenter)
+        
+
+  }
+
 
   // Compute the available width
 	for _, child := range row.Children {
     childProps := child.GetProperties()
+    fmt.Println(childProps.Size.Height)
     if childProps.Size.Scale == ScalePixel { 
       availableWidth -= childProps.Size.Width
     }
@@ -40,6 +76,8 @@ func (row Row) Draw(img *image.RGBA, window *glfw.Window) {
   if childrenWidth == 0 {
    childrenWidth = 1
   }
+
+  fmt.Println("availableWidth: ", availableWidth)
 
   // Compute the width of each child
   for _, child := range row.Children {
@@ -59,8 +97,16 @@ func (row Row) Draw(img *image.RGBA, window *glfw.Window) {
     }
   }
 
+  for _, child := range row.Children {
+    fmt.Println(child)
+  }
+
   // Compute the center of each child
-  currentX := row.Properties.Center.X - row.Properties.Size.Width / 2
+  // currentX := row.Properties.Center.X - row.Properties.Size.Width / 2
+  currentX := 0
+  if row.Properties.Size.Scale == ScaleRelative {
+    currentX = row.Properties.Center.X - availableWidth / 2
+  }
   for _, child := range row.Children {
     childProps := child.GetProperties()
     pixelWidth := childProps.Size.Width
@@ -78,6 +124,7 @@ func (row Row) Draw(img *image.RGBA, window *glfw.Window) {
         Y: childProps.Center.Y,
       },
     )
+    fmt.Println("Drawing child at ", currentX + pixelWidth / 2)
     child.Draw(img, window)
     currentX += pixelWidth
   }
