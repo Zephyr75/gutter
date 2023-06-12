@@ -99,6 +99,7 @@ type Properties struct {
 	Padding   Padding
 	Function  func()
   Parent    *Properties
+  Initialized bool
 }
 
 func DefaultProperties(props Properties) Properties {
@@ -123,6 +124,7 @@ func DefaultProperties(props Properties) Properties {
     Padding: PaddingEqual(ScalePixel, 0),
     Function: nil,
     Parent: props.Parent,
+    Initialized: true,
   }
 }
 

@@ -18,14 +18,6 @@ type Row struct {
 func (row Row) Initialize() UIElement {
   row.Properties = DefaultProperties(row.Properties)
 
-  // row.Properties.Size = Size{
-  //   Scale:  ScalePixel,
-  //   Width:  utils.RESOLUTION_X,
-  //   Height: utils.RESOLUTION_Y,
-  // }
-    
-
-
   for i, child := range row.Children {
     child = child.SetParent(&row.Properties)
     row.Children[i] = child.Initialize()
@@ -35,8 +27,9 @@ func (row Row) Initialize() UIElement {
 
 func (row Row) Draw(img *image.RGBA, window *glfw.Window) {
 
-
-  row = row.Initialize().(Row)
+  if !row.Properties.Initialized {
+    row = row.Initialize().(Row)
+  }
 
 	
 	Draw(img, window, row.Properties, row.Style)

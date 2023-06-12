@@ -22,7 +22,9 @@ func (button Button) Initialize() UIElement {
 
 func (button Button) Draw(img *image.RGBA, window *glfw.Window) {
 
-  // button = button.Initialize().(Button)
+  if !button.Properties.Initialized {
+    button = button.Initialize().(Button)
+  }
 
 	Draw(img, window, button.Properties, button.Style)
 	
