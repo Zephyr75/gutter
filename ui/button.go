@@ -63,7 +63,6 @@ func (button Button) Draw(img *image.RGBA, window *glfw.Window) {
 func (button Button) SetProperties(size Size, center Point) UIElement {
 	button.Properties.Size = size
 	button.Properties.Center = center
-	//println("Button: ", center.X, " ", center.Y, " ", size.Width, " ", size.Height)
   return button
 }
 
