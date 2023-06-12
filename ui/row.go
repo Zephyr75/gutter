@@ -16,7 +16,7 @@ type Row struct {
 }
 
 func (row Row) Initialize() UIElement {
-  row.Properties = DefaultProperties()
+  row.Properties = DefaultProperties(row.Properties)
 
   // row.Properties.Size = Size{
   //   Scale:  ScalePixel,
@@ -27,6 +27,7 @@ func (row Row) Initialize() UIElement {
 
 
   for i, child := range row.Children {
+    child = child.SetParent(&row)
     row.Children[i] = child.Initialize()
   }
   return row
@@ -41,7 +42,8 @@ func (row Row) Draw(img *image.RGBA, window *glfw.Window) {
 	Draw(img, window, row.Properties, row.Style)
 
   availableWidth := row.Properties.Size.Width
-  fmt.Println("availableWidth: ", availableWidth)
+  fmt.Println("--------------------")
+  // fmt.Println("availableWidth: ", availableWidth)
 
   for _, child := range row.Children {
 
@@ -58,7 +60,7 @@ func (row Row) Draw(img *image.RGBA, window *glfw.Window) {
   // Compute the available width
 	for _, child := range row.Children {
     childProps := child.GetProperties()
-    fmt.Println(childProps.Size.Height)
+    // fmt.Println(childProps.Size.Height)
     if childProps.Size.Scale == ScalePixel { 
       availableWidth -= childProps.Size.Width
     }
@@ -79,15 +81,22 @@ func (row Row) Draw(img *image.RGBA, window *glfw.Window) {
 
   fmt.Println("availableWidth: ", availableWidth)
 
-  // Compute the width of each child
+
   for _, child := range row.Children {
+    fmt.Println(child)
+  }
+
+  fmt.Println("childrenWidth: ", childrenWidth)
+
+  // Compute the width of each child
+  for i, child := range row.Children {
     childProps := child.GetProperties()
     if childProps.Size.Scale == ScaleRelative { 
-      child.SetProperties(
+      row.Children[i] = child.SetProperties(
         Size{
-          Scale:  childProps.Size.Scale,
+          Scale:  ScalePixel,
           Width:  childProps.Size.Width * availableWidth / childrenWidth,
-          Height: childProps.Size.Height,
+          Height: row.Properties.Size.Height,
         },
         Point{
           X: childProps.Center.X,
@@ -101,19 +110,21 @@ func (row Row) Draw(img *image.RGBA, window *glfw.Window) {
     fmt.Println(child)
   }
 
+
+
   // Compute the center of each child
   // currentX := row.Properties.Center.X - row.Properties.Size.Width / 2
   currentX := 0
   if row.Properties.Size.Scale == ScaleRelative {
     currentX = row.Properties.Center.X - availableWidth / 2
   }
-  for _, child := range row.Children {
+  for i, child := range row.Children {
     childProps := child.GetProperties()
     pixelWidth := childProps.Size.Width
     if childProps.Size.Scale == ScaleRelative {
       pixelWidth = childProps.Size.Width * availableWidth / childrenWidth
     }
-    child.SetProperties(
+    row.Children[i] = child.SetProperties(
       Size{
         Scale:  childProps.Size.Scale,
         Width:  childProps.Size.Width,
@@ -125,19 +136,27 @@ func (row Row) Draw(img *image.RGBA, window *glfw.Window) {
       },
     )
     fmt.Println("Drawing child at ", currentX + pixelWidth / 2)
-    child.Draw(img, window)
     currentX += pixelWidth
   }
 
 
+  for _, child := range row.Children {
+    fmt.Println(child)
+    child.Draw(img, window)
+  }
 
 
 }
 
-
-func (row Row) SetProperties(size Size, center Point) {
+func (row Row) SetProperties(size Size, center Point) UIElement {
 	row.Properties.Size = size
 	row.Properties.Center = center
+  return row
+}
+
+func (row Row) SetParent(parent *Row) UIElement {
+  row.Properties.Parent = parent
+  return row
 }
 
 func (row Row) GetProperties() Properties {

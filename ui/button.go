@@ -16,13 +16,13 @@ type Button struct {
 }
 
 func (button Button) Initialize() UIElement {
-  button.Properties = DefaultProperties()
+  button.Properties = DefaultProperties(button.Properties)
   return button
 }
 
 func (button Button) Draw(img *image.RGBA, window *glfw.Window) {
 
-  button = button.Initialize().(Button)
+  // button = button.Initialize().(Button)
 
 	Draw(img, window, button.Properties, button.Style)
 	
@@ -33,10 +33,16 @@ func (button Button) Draw(img *image.RGBA, window *glfw.Window) {
 }
 
 
-func (button Button) SetProperties(size Size, center Point) {
+func (button Button) SetProperties(size Size, center Point) UIElement {
 	button.Properties.Size = size
 	button.Properties.Center = center
 	//println("Button: ", center.X, " ", center.Y, " ", size.Width, " ", size.Height)
+  return button
+}
+
+func (button Button) SetParent(parent *Row) UIElement {
+  button.Properties.Parent = parent
+  return button
 }
 
 func (button Button) GetProperties() Properties {

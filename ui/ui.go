@@ -1,13 +1,14 @@
 package ui
 
 import (
+	"fmt"
 	"image"
 	"image/color"
 	"sync"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
 
-  "gutter/utils"
+	"gutter/utils"
 )
 
 type ScaleType bool
@@ -84,10 +85,11 @@ type Size struct {
 
 type UIElement interface {
 	Draw(img *image.RGBA, window *glfw.Window)
-	SetProperties(size Size, center Point)
+	SetProperties(size Size, center Point) UIElement
   GetProperties() Properties
 	Debug()
   Initialize() UIElement
+  SetParent(parent *Row) UIElement
 }
 
 type Properties struct {
@@ -96,13 +98,16 @@ type Properties struct {
 	Alignment Alignment
 	Padding   Padding
 	Function  func()
-  Parent    *UIElement
+  Parent    *Row
 }
 
-func DefaultProperties() Properties {
-  screenSize := Size{ScalePixel, utils.RESOLUTION_X, utils.RESOLUTION_Y}
-
-  // screenSize := Size{ScaleRelative, 100, 100}
+func DefaultProperties(props Properties) Properties {
+  screenSize := Size{ScaleRelative, 100, 100}
+  if props.Parent == nil {
+    fmt.Println("Parent is nil")
+    screenSize = Size{ScalePixel, utils.RESOLUTION_X, utils.RESOLUTION_Y}
+  }
+    
   screenCenter := Point{utils.RESOLUTION_X / 2, utils.RESOLUTION_Y / 2}
   return Properties{
     Center: screenCenter,
@@ -110,7 +115,7 @@ func DefaultProperties() Properties {
     Alignment: AlignmentCenter,
     Padding: PaddingEqual(ScalePixel, 0),
     Function: nil,
-    Parent: nil,
+    Parent: props.Parent,
   }
 }
 
@@ -131,8 +136,13 @@ type Point struct {
 
 func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style) {
 	// maxWidth, maxHeight := GetMaxDimensions(props, window)
+
+  fmt.Println("Draw: ", props.Center.X, " ", props.Center.Y, " ", props.Size.Width, " ", props.Size.Height)
+
 	width, height := GetScreenSize(props)
 	centerX, centerY := GetScreenCenter(props)
+
+  fmt.Println("Center: ", centerX, " ", centerY, " ", width, " ", height)
 
 	x, y := window.GetCursorPos()
 
@@ -160,8 +170,10 @@ func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style) {
 	for i := 0; i < width; i++ {
 		go func(i int) {
 			for j := 0; j < height; j++ {
-				trueJ := utils.RESOLUTION_Y - (centerY + j) - 1
-				img.Set(centerX+i, (centerY + trueJ), color.RGBA{byte(r), byte(g), byte(b), 255})
+        trueI := centerX - width/2 + i
+				trueJ := centerY - height/2 + j
+
+				img.Set(trueI, trueJ, color.RGBA{byte(r), byte(g), byte(b), 255})
 			}
 			wg.Done()
 		}(i)

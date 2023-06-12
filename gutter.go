@@ -186,6 +186,7 @@ func main() {
 
         // exit.Draw(img, window)
 
+        // window.SetShouldClose(true)
 
 
         // -------------------------
