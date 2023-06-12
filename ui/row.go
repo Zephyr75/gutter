@@ -90,7 +90,7 @@ func (row Row) Draw(img *image.RGBA, window *glfw.Window) {
       },
       Point{
         X: currentX + pixelWidth / 2,
-        Y: childProps.Center.Y,
+        Y: row.Properties.Center.Y,
       },
     )
     currentX += pixelWidth
