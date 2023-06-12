@@ -92,18 +92,21 @@ func main() {
           },
           Children: []ui.UIElement{
             ui.Button{
-              Properties: ui.Properties{
-                Size: ui.Size{
-                  Scale:  ui.ScalePixel,
-                  Width:  100,
-                  Height: 100,
-                }, 
-              },
+              // Properties: ui.Properties{
+              //   Size: ui.Size{
+              //     Scale:  ui.ScalePixel,
+              //     Width:  100,
+              //     Height: 100,
+              //   }, 
+              // },
               Style: ui.Style{
                 Color: green,
               },
             },
             ui.Column{
+              Properties: ui.Properties{
+                Padding: ui.PaddingSideBySide(ui.ScaleRelative, 0, 25, 25, 0),
+              },
               Style: ui.Style{
                 Color: white,
               },
@@ -120,86 +123,42 @@ func main() {
                     Color: blue,
                   },
                 },
-                // ui.Button{
-                //   Properties: ui.Properties{
-                //     Size: ui.Size{
-                //       Scale:  ui.ScaleRelative,
-                //       Width:  50,
-                //       Height: 50,
-                //     },
-                //   },
-                //   Style: ui.Style{
-                //     Color: red,
-                //   },
-                // },
+                ui.Button{
+                  Properties: ui.Properties{
+                    Size: ui.Size{
+                      Scale:  ui.ScaleRelative,
+                      Width:  50,
+                      Height: 50,
+                    },
+                  },
+                  Style: ui.Style{
+                    Color: red,
+                  },
+                },
               },
             },
-            ui.Button{
-              Properties: ui.Properties{
-                Size: ui.Size{
-                  Scale:  ui.ScaleRelative,
-                  Width:  50,
-                  Height: 100,
-                }, 
-              },
-              Style: ui.Style{
-                Color: green,
-              },
-            },
-            ui.Button{
-              Properties: ui.Properties{
-                Size: ui.Size{
-                  Scale:  ui.ScalePixel,
-                  Width:  200,
-                  Height: 100,
-                }, 
-              },
-              Style: ui.Style{
-                Color: blue,
-              },
-            },
-
-
-            // ui.Column{
-            //   // Properties: ui.Properties{
-            //   //   Alignment: ui.AlignmentCenter,
-            //   // },
+            // ui.Button{
+            //   Properties: ui.Properties{
+            //     Size: ui.Size{
+            //       Scale:  ui.ScaleRelative,
+            //       Width:  50,
+            //       Height: 100,
+            //     }, 
+            //   },
             //   Style: ui.Style{
             //     Color: green,
             //   },
-            //   Children: []ui.UIElement{
-            //     ui.Button{
-            //       Properties: ui.Properties{
-            //         Alignment: ui.AlignmentCenter,
-            //         Size: ui.Size{
-            //           Scale:  ui.ScaleRelative,
-            //           Width:  50,
-            //           Height: 50,
-            //         },
-            //         // Function: func() {
-            //         //   println("Button 1")
-            //         // },
-            //       },
-            //       Style: ui.Style{
-            //         Color: red,
-            //       },
-            //     },
-            //     ui.Button{
-            //       // Properties: ui.Properties{
-            //         // Alignment: ui.AlignmentCenter,
-            //         // Size: ui.Size{
-            //         //   Scale:  ui.ScaleRelative,
-            //         //   Width:  25,
-            //         //   Height: 100,
-            //         // },
-            //         // Function: func() {
-            //         //   println("Button 2")
-            //         // },
-            //       // },
-            //       Style: ui.Style{
-            //         Color: orange,
-            //       },
-            //     },
+            // },
+            // ui.Button{
+            //   Properties: ui.Properties{
+            //     Size: ui.Size{
+            //       Scale:  ui.ScalePixel,
+            //       Width:  200,
+            //       Height: 100,
+            //     }, 
+            //   },
+            //   Style: ui.Style{
+            //     Color: blue,
             //   },
             // },
             ui.Button{
@@ -231,25 +190,25 @@ func main() {
 
         parent.Draw(img, window)
 
-        exit := ui.Button{
-          Properties: ui.Properties{
-            Alignment: ui.AlignmentTopLeft,
-            Padding: ui.PaddingSymmetric(ui.ScaleRelative, 0, 25), 
-            Size: ui.Size{
-              Scale:  ui.ScaleRelative,
-              Width:  100,
-              Height: 50,
-            },
-            Function: func() {
-              window.SetShouldClose(true)
-            },
-          },
-          Style: ui.Style{
-            Color: color.RGBA{255, 255, 255, 255},
-          },
-        }
+        // exit := ui.Button{
+        //   Properties: ui.Properties{
+        //     Alignment: ui.AlignmentTopLeft,
+        //     Padding: ui.PaddingEqual(ui.ScaleRelative, 25), 
+        //     Size: ui.Size{
+        //       Scale:  ui.ScaleRelative,
+        //       Width:  100,
+        //       Height: 100,
+        //     },
+        //     Function: func() {
+        //       window.SetShouldClose(true)
+        //     },
+        //   },
+        //   Style: ui.Style{
+        //     Color: color.RGBA{255, 255, 255, 255},
+        //   },
+        // }
 
-        exit.Draw(img, window)
+        // exit.Draw(img, window)
 
         // window.SetShouldClose(true)
 

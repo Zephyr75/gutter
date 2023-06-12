@@ -29,11 +29,15 @@ func (row Row) Draw(img *image.RGBA, window *glfw.Window) {
   if !row.Properties.Initialized {
     row = row.Initialize().(Row)
   }
+
+  row = ApplyPadding(row).(Row)
+
+
 	
 	Draw(img, window, row.Properties, row.Style)
 
   availableWidth := row.Properties.Size.Width
-  maxWidth := row.Properties.Parent.Size.Width
+  maxWidth := row.Properties.Size.Width
   if row.Properties.Size.Scale == ScaleRelative {
     availableWidth = row.Properties.Size.Width * maxWidth / 100
   }

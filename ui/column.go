@@ -1,7 +1,7 @@
 package ui
 
 import (
-	// "fmt"
+	"fmt"
 	"image"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -30,13 +30,15 @@ func (column Column) Draw(img *image.RGBA, window *glfw.Window) {
     column = column.Initialize().(Column)
   }
 
+  column = ApplyPadding(column).(Column)
+
   // fmt.Println("Column")
-  // fmt.Println(column)
+  fmt.Println(column.Properties)
 	
 	Draw(img, window, column.Properties, column.Style)
 
   availableHeight := column.Properties.Size.Height
-  maxHeight := column.Properties.Parent.Size.Height
+  maxHeight := column.Properties.Size.Height
   if column.Properties.Size.Scale == ScaleRelative {
     availableHeight = column.Properties.Size.Height * maxHeight / 100
   }

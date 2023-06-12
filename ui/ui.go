@@ -194,23 +194,7 @@ func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style) {
 			for j := 0; j < height; j++ {
         trueI := centerX - width/2 + i
 				trueJ := centerY - height/2 + j
-
-        if props.Padding.Scale == ScaleRelative {
-          parent := props.Parent
-          widthParent := parent.Size.Width
-          heightParent := parent.Size.Height
-          if i < props.Padding.Left * widthParent / 100 ||
-             i > width - props.Padding.Right * widthParent / 100 || 
-             j < props.Padding.Top * heightParent / 100 || 
-             j > height - props.Padding.Bottom * heightParent / 100 { 
-            continue
-          }
-        } else if props.Padding.Scale == ScalePixel {
-          if i < props.Padding.Left || i > width - props.Padding.Right || j < props.Padding.Top || j > height - props.Padding.Bottom {
-            continue
-          }
-        }
-
+        trueJ = utils.RESOLUTION_Y - trueJ
 				img.Set(trueI, trueJ, color.RGBA{byte(r), byte(g), byte(b), 255})
 			}
 			wg.Done()
@@ -269,6 +253,33 @@ func GetScreenCenter(props Properties) (int, int) {
 	// centerY -= height / 2
 
 	return centerX, centerY
+}
+
+
+func ApplyPadding(element UIElement) UIElement {
+  props := element.GetProperties()
+
+  oldWidth := props.Size.Width
+  oldHeight := props.Size.Height
+  // if props.Size.Scale == ScaleRelative {
+  //   oldWidth = props.Parent.Size.Width * oldWidth / 100
+  //   oldHeight = props.Parent.Size.Height * oldHeight / 100
+  // }
+
+  horizPadding := props.Padding.Left + props.Padding.Right
+  vertPadding := props.Padding.Top + props.Padding.Bottom
+  horizOffset := props.Padding.Left - props.Padding.Right
+  vertOffset := props.Padding.Top - props.Padding.Bottom
+  if props.Padding.Scale == ScaleRelative {
+    horizPadding = oldWidth * horizPadding / 100
+    vertPadding = oldHeight * vertPadding / 100
+    horizOffset = oldWidth * horizOffset / 100
+    vertOffset = oldHeight * vertOffset / 100
+  }
+  newSize := Size{ScalePixel, oldWidth - horizPadding, oldHeight - vertPadding}
+  newCenter := Point{props.Center.X + horizOffset / 2, props.Center.Y + vertOffset / 2}
+  // newCenter := Point{props.Center.X, props.Center.Y}
+  return element.SetProperties(newSize, newCenter)
 }
 
 

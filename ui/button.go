@@ -1,7 +1,7 @@
-
 package ui
 
 import (
+	// "fmt"
 	"image"
 	// "image/color"
 
@@ -21,10 +21,18 @@ func (button Button) Initialize() UIElement {
 }
 
 func (button Button) Draw(img *image.RGBA, window *glfw.Window) {
+  // fmt.Println("--------------------")
+  // fmt.Println(button)
 
   if !button.Properties.Initialized {
     button = button.Initialize().(Button)
   }
+
+  button = ApplyPadding(button).(Button)
+
+
+
+  // fmt.Println(button)
 
 	Draw(img, window, button.Properties, button.Style)
 	

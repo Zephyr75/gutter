@@ -1,4 +1,4 @@
 package utils
 
 const RESOLUTION_X = 1000
-const RESOLUTION_Y = 700
+const RESOLUTION_Y = 500
