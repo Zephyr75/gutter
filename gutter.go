@@ -72,15 +72,15 @@ func main() {
         // -------------------------
 
         
-        green := color.RGBA{201, 203, 163, 255}
-        white := color.RGBA{0, 0, 0, 255}
-        // orange := color.RGBA{226, 109, 92, 255}
-        red := color.RGBA{114, 61, 70, 255}
-        brown := color.RGBA{71, 45, 48, 255}
+        green := color.RGBA{0, 255, 0, 255}
+        white := color.RGBA{255, 255, 255, 255}
+        blue := color.RGBA{0, 0, 255, 255}
+        red := color.RGBA{255, 0, 0, 255}
+        black := color.RGBA{0, 0, 0, 255}
 
         parent := ui.Row{
           Style: ui.Style{
-            Color: white,
+            Color: black,
           },
           Children: []ui.UIElement{
             ui.Button{
@@ -95,7 +95,37 @@ func main() {
                 Color: green,
               },
             },
-
+            ui.Column{
+              Style: ui.Style{
+                Color: white,
+              },
+              Children: []ui.UIElement{
+                ui.Button{
+                  Properties: ui.Properties{
+                    Size: ui.Size{
+                      Scale:  ui.ScaleRelative,
+                      Width:  50,
+                      Height: 50,
+                    },
+                  },
+                  Style: ui.Style{
+                    Color: blue,
+                  },
+                },
+                ui.Button{
+                  Properties: ui.Properties{
+                    Size: ui.Size{
+                      Scale:  ui.ScaleRelative,
+                      Width:  50,
+                      Height: 50,
+                    },
+                  },
+                  Style: ui.Style{
+                    Color: red,
+                  },
+                },
+              },
+            },
             ui.Button{
               Properties: ui.Properties{
                 Size: ui.Size{
@@ -105,9 +135,23 @@ func main() {
                 }, 
               },
               Style: ui.Style{
-                Color: brown,
+                Color: green,
               },
             },
+            ui.Button{
+              Properties: ui.Properties{
+                Size: ui.Size{
+                  Scale:  ui.ScalePixel,
+                  Width:  200,
+                  Height: 100,
+                }, 
+              },
+              Style: ui.Style{
+                Color: blue,
+              },
+            },
+
+
             // ui.Column{
             //   // Properties: ui.Properties{
             //   //   Alignment: ui.AlignmentCenter,

@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"fmt"
+	// "fmt"
 	"image"
 	"image/color"
 	"sync"
@@ -107,7 +107,7 @@ func DefaultProperties(props Properties) Properties {
   if props.Size.Width == 0 && props.Size.Height == 0 {
     newSize = Size{ScaleRelative, 100, 100}
     if props.Parent == nil {
-      fmt.Println("Parent is nil")
+      // fmt.Println("Parent is nil")
       newSize = Size{ScalePixel, utils.RESOLUTION_X, utils.RESOLUTION_Y}
     }
   }
@@ -116,6 +116,19 @@ func DefaultProperties(props Properties) Properties {
   if props.Center.X == 0 && props.Center.Y == 0 {
     newCenter = Point{utils.RESOLUTION_X / 2, utils.RESOLUTION_Y / 2}
   }
+
+  newParent := props.Parent
+  if props.Parent == nil {
+    newParent = &Properties{
+      Center: Point{utils.RESOLUTION_X / 2, utils.RESOLUTION_Y / 2},
+      Size: Size{ScalePixel, utils.RESOLUTION_X, utils.RESOLUTION_Y},
+      Alignment: AlignmentCenter,
+      Padding: PaddingEqual(ScalePixel, 0),
+      Function: nil,
+      Parent: nil,
+      Initialized: true,
+    }
+  }
     
   return Properties{
     Center: newCenter,
@@ -123,7 +136,7 @@ func DefaultProperties(props Properties) Properties {
     Alignment: AlignmentCenter,
     Padding: PaddingEqual(ScalePixel, 0),
     Function: nil,
-    Parent: props.Parent,
+    Parent: newParent,
     Initialized: true,
   }
 }
@@ -145,12 +158,12 @@ type Point struct {
 
 func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style) {
 
-  fmt.Println("Draw: ", props.Center.X, " ", props.Center.Y, " ", props.Size.Width, " ", props.Size.Height)
+  // fmt.Println("Draw: ", props.Center.X, " ", props.Center.Y, " ", props.Size.Width, " ", props.Size.Height)
 
 	width, height := GetScreenSize(props)
 	centerX, centerY := GetScreenCenter(props)
 
-  fmt.Println("Center: ", centerX, " ", centerY, " ", width, " ", height)
+  // fmt.Println("Center: ", centerX, " ", centerY, " ", width, " ", height)
 
 	x, y := window.GetCursorPos()
 
