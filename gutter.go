@@ -72,7 +72,7 @@ func main() {
         // -------------------------
 
         
-        // green := color.RGBA{201, 203, 163, 255}
+        green := color.RGBA{201, 203, 163, 255}
         white := color.RGBA{0, 0, 0, 255}
         // orange := color.RGBA{226, 109, 92, 255}
         red := color.RGBA{114, 61, 70, 255}
@@ -84,9 +84,26 @@ func main() {
           },
           Children: []ui.UIElement{
             ui.Button{
-              // Properties: ui.Properties{
-              //   Padding:   ui.PaddingEqual(ui.ScalePixel, 10),
-              // },
+              Properties: ui.Properties{
+                Size: ui.Size{
+                  Scale:  ui.ScalePixel,
+                  Width:  100,
+                  Height: 100,
+                }, 
+              },
+              Style: ui.Style{
+                Color: green,
+              },
+            },
+
+            ui.Button{
+              Properties: ui.Properties{
+                Size: ui.Size{
+                  Scale:  ui.ScaleRelative,
+                  Width:  50,
+                  Height: 100,
+                }, 
+              },
               Style: ui.Style{
                 Color: brown,
               },

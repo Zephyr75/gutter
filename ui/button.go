@@ -40,7 +40,7 @@ func (button Button) SetProperties(size Size, center Point) UIElement {
   return button
 }
 
-func (button Button) SetParent(parent *Row) UIElement {
+func (button Button) SetParent(parent *Properties) UIElement {
   button.Properties.Parent = parent
   return button
 }

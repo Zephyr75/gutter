@@ -27,7 +27,7 @@ func (row Row) Initialize() UIElement {
 
 
   for i, child := range row.Children {
-    child = child.SetParent(&row)
+    child = child.SetParent(&row.Properties)
     row.Children[i] = child.Initialize()
   }
   return row
@@ -154,7 +154,7 @@ func (row Row) SetProperties(size Size, center Point) UIElement {
   return row
 }
 
-func (row Row) SetParent(parent *Row) UIElement {
+func (row Row) SetParent(parent *Properties) UIElement {
   row.Properties.Parent = parent
   return row
 }

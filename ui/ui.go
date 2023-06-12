@@ -89,7 +89,7 @@ type UIElement interface {
   GetProperties() Properties
 	Debug()
   Initialize() UIElement
-  SetParent(parent *Row) UIElement
+  SetParent(parent *Properties) UIElement
 }
 
 type Properties struct {
@@ -98,20 +98,27 @@ type Properties struct {
 	Alignment Alignment
 	Padding   Padding
 	Function  func()
-  Parent    *Row
+  Parent    *Properties
 }
 
 func DefaultProperties(props Properties) Properties {
-  screenSize := Size{ScaleRelative, 100, 100}
-  if props.Parent == nil {
-    fmt.Println("Parent is nil")
-    screenSize = Size{ScalePixel, utils.RESOLUTION_X, utils.RESOLUTION_Y}
+  newSize := props.Size
+  if props.Size.Width == 0 && props.Size.Height == 0 {
+    newSize = Size{ScaleRelative, 100, 100}
+    if props.Parent == nil {
+      fmt.Println("Parent is nil")
+      newSize = Size{ScalePixel, utils.RESOLUTION_X, utils.RESOLUTION_Y}
+    }
+  }
+
+  newCenter := props.Center
+  if props.Center.X == 0 && props.Center.Y == 0 {
+    newCenter = Point{utils.RESOLUTION_X / 2, utils.RESOLUTION_Y / 2}
   }
     
-  screenCenter := Point{utils.RESOLUTION_X / 2, utils.RESOLUTION_Y / 2}
   return Properties{
-    Center: screenCenter,
-    Size: screenSize,
+    Center: newCenter,
+    Size: newSize,
     Alignment: AlignmentCenter,
     Padding: PaddingEqual(ScalePixel, 0),
     Function: nil,
@@ -135,7 +142,6 @@ type Point struct {
 }
 
 func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style) {
-	// maxWidth, maxHeight := GetMaxDimensions(props, window)
 
   fmt.Println("Draw: ", props.Center.X, " ", props.Center.Y, " ", props.Size.Width, " ", props.Size.Height)
 
@@ -206,7 +212,7 @@ func GetScreenSize(props Properties) (int, int) {
 	width := props.Size.Width
 	height := props.Size.Height
 	if props.Size.Scale == ScaleRelative {
-    parentProps := (*props.Parent).GetProperties()
+    parentProps := props.Parent
 	  widthParent := parentProps.Size.Width
     heightParent := parentProps.Size.Height
     width = widthParent * props.Size.Width / 100
