@@ -154,7 +154,7 @@ func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style) {
 
 	r, g, b, _ := style.Color.RGBA()
 
-	if x > float64(centerX) && x < float64(centerX+width) && y > float64(centerY) && y < float64(centerY+height) {
+	if x > float64(centerX - width/2) && x < float64(centerX + width/2) && y > float64(centerY - height/2) && y < float64(centerY + height/2) {
 		if r % 255 > 30 {
 			r -= 30
 		}
