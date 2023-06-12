@@ -61,6 +61,16 @@ func main() {
         gl.BindFramebuffer(gl.DRAW_FRAMEBUFFER, 0)
     }
 
+
+    ///
+      
+    i := 0
+    time := glfw.GetTime()
+
+    ///
+
+
+
     for !window.ShouldClose() {
 
         var w, h = window.GetSize()
@@ -112,18 +122,18 @@ func main() {
                     Color: blue,
                   },
                 },
-                ui.Button{
-                  Properties: ui.Properties{
-                    Size: ui.Size{
-                      Scale:  ui.ScaleRelative,
-                      Width:  50,
-                      Height: 50,
-                    },
-                  },
-                  Style: ui.Style{
-                    Color: red,
-                  },
-                },
+                // ui.Button{
+                //   Properties: ui.Properties{
+                //     Size: ui.Size{
+                //       Scale:  ui.ScaleRelative,
+                //       Width:  50,
+                //       Height: 50,
+                //     },
+                //   },
+                //   Style: ui.Style{
+                //     Color: red,
+                //   },
+                // },
               },
             },
             ui.Button{
@@ -259,5 +269,17 @@ func main() {
 
         window.SwapBuffers()
         glfw.PollEvents()
+
+        ///
+        i++
+        if glfw.GetTime()-time > 1 {
+          println("FPS:", i)
+          i = 0
+          time = glfw.GetTime()
+        }
+        ///
+
+
+
     }
 }

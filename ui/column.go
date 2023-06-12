@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"fmt"
+	// "fmt"
 	"image"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -30,8 +30,8 @@ func (column Column) Draw(img *image.RGBA, window *glfw.Window) {
     column = column.Initialize().(Column)
   }
 
-  fmt.Println("Column")
-  fmt.Println(column)
+  // fmt.Println("Column")
+  // fmt.Println(column)
 	
 	Draw(img, window, column.Properties, column.Style)
 
@@ -101,8 +101,8 @@ func (column Column) Draw(img *image.RGBA, window *glfw.Window) {
 
 
   for _, child := range column.Children {
-    fmt.Println("child")
-    fmt.Println(child)
+    // fmt.Println("child")
+    // fmt.Println(child)
     child.Draw(img, window)
   }
 
