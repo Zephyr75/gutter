@@ -82,7 +82,7 @@ func main() {
         
         green := color.RGBA{0, 255, 0, 255}
         white := color.RGBA{255, 255, 255, 255}
-        blue := color.RGBA{0, 0, 255, 255}
+        // blue := color.RGBA{0, 0, 255, 255}
         red := color.RGBA{255, 0, 0, 255}
         black := color.RGBA{0, 0, 0, 255}
 
@@ -166,36 +166,36 @@ func main() {
               Style: ui.Style{
                 Color: red,
               },
-              Child: ui.Button{
-                Properties: ui.Properties{
-                  Size: ui.Size{
-                    Scale:  ui.ScaleRelative,
-                    Width:  50,
-                    Height: 50,
-                  },
-                  Alignment: ui.AlignmentRight,
-                },
-                Style: ui.Style{
-                  Color: blue,
-                },
-              },
-
-              // Child: ui.Text{
-              //   Properties: &ui.Properties{
-              //     Alignment: ui.AlignmentCenter,
-              //     //Padding:   ui.PaddingEqual(ui.ScalePixel, 100),
+              // Child: ui.Button{
+              //   Properties: ui.Properties{
               //     Size: ui.Size{
               //       Scale:  ui.ScalePixel,
-              //       Width:  100,
+              //       Width:  50,
               //       Height: 50,
               //     },
+              //     Alignment: ui.AlignmentCenter,
               //   },
-              //   StyleText: ui.StyleText{
-              //     Font: "JBMono.ttf",
-              //     FontSize: 20,
-              //     FontColor: color.RGBA{0, 0, 0, 255},
+              //   Style: ui.Style{
+              //     Color: blue,
               //   },
               // },
+
+              Child: ui.Text{
+                Properties: ui.Properties{
+                  Alignment: ui.AlignmentCenter,
+                  //Padding:   ui.PaddingEqual(ui.ScalePixel, 100),
+                  Size: ui.Size{
+                    Scale:  ui.ScalePixel,
+                    Width:  100,
+                    Height: 50,
+                  },
+                },
+                StyleText: ui.StyleText{
+                  Font: "JBMono.ttf",
+                  FontSize: 20,
+                  FontColor: color.RGBA{0, 0, 0, 255},
+                },
+              },
             },
           },
         }

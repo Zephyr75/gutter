@@ -19,8 +19,8 @@ type Text struct {
 }
 
 
-func (text Text) Initialize() UIElement {
-  text.Properties = DefaultProperties(text.Properties)
+func (text Text) Initialize(skipAlignment bool) UIElement {
+  text.Properties = DefaultProperties(text.Properties, skipAlignment)
   return text
 }
 
@@ -29,12 +29,14 @@ func (text Text) Draw(img *image.RGBA, window *glfw.Window) {
 
 
   if !text.Properties.Initialized {
-    text = text.Initialize().(Text)
+    text = text.Initialize(false).(Text)
   }
 
   text = ApplyRelative(text).(Text)
-
-  text = ApplyAlignment(text).(Text)
+  
+  if !text.Properties.SkipAlignment {
+    text = ApplyAlignment(text).(Text)
+  }
 
   text = ApplyPadding(text).(Text)
 

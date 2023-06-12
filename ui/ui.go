@@ -88,7 +88,7 @@ type UIElement interface {
 	SetProperties(size Size, center Point) UIElement
   GetProperties() Properties
 	Debug()
-  Initialize() UIElement
+  Initialize(skipAlignment bool) UIElement
   SetParent(parent *Properties) UIElement
 }
 
@@ -100,9 +100,10 @@ type Properties struct {
 	Function  func()
   Parent    *Properties
   Initialized bool
+  SkipAlignment bool
 }
 
-func DefaultProperties(props Properties) Properties {
+func DefaultProperties(props Properties, skipAlignment bool) Properties {
   newSize := props.Size
   if props.Size.Width == 0 && props.Size.Height == 0 {
     newSize = Size{ScaleRelative, 100, 100}
@@ -139,6 +140,7 @@ func DefaultProperties(props Properties) Properties {
     Function: props.Function,
     Parent: newParent,
     Initialized: true,
+    SkipAlignment: skipAlignment,
   }
 }
 
@@ -248,8 +250,14 @@ func ApplyAlignment(element UIElement) UIElement {
   parent := props.Parent
   newX := props.Center.X
   newY := props.Center.Y
+
+
+  //TODO instead of skipping ApplyAlignment, we should only skip the AlignmentCenter case
   
   switch props.Alignment {
+  case AlignmentCenter:
+    newX = parent.Center.X
+    newY = parent.Center.Y
   case AlignmentBottom:
     newY = parent.Center.Y + parent.Size.Height / 2 - props.Size.Height / 2
   case AlignmentTop:

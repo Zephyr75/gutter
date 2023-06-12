@@ -14,8 +14,8 @@ type Row struct {
 	Children   []UIElement
 }
 
-func (row Row) Initialize() UIElement {
-  row.Properties = DefaultProperties(row.Properties)
+func (row Row) Initialize(skipAlignment bool) UIElement {
+  row.Properties = DefaultProperties(row.Properties, skipAlignment)
   return row
 }
 
@@ -23,18 +23,21 @@ func (row Row) Draw(img *image.RGBA, window *glfw.Window) {
   // fmt.Println("--------------------")
 
   if !row.Properties.Initialized {
-    row = row.Initialize().(Row)
+    row = row.Initialize(false).(Row)
   }
 
   row = ApplyRelative(row).(Row)
 
-  row = ApplyAlignment(row).(Row)
+  if !row.Properties.SkipAlignment {
+    row = ApplyAlignment(row).(Row)
+  }
+
 
   row = ApplyPadding(row).(Row)
 
   for i, child := range row.Children {
     child = child.SetParent(&row.Properties)
-    row.Children[i] = child.Initialize()
+    row.Children[i] = child.Initialize(true)
   }
 	
 	Draw(img, window, row.Properties, row.Style)
