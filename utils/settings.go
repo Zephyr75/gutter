@@ -1,4 +1,4 @@
 package utils
 
-const RESOLUTION_X = 1000
-const RESOLUTION_Y = 500
+var RESOLUTION_X = 1000
+var RESOLUTION_Y = 500

@@ -4,13 +4,20 @@ import (
 	// "fmt"
 	"image"
 	"image/color"
+
 	"runtime"
+
+  // "sync"
+
+  // "image/draw"
 
 	"github.com/go-gl/gl/all-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 
 	"gutter/ui"
 	"gutter/utils"
+
+	"github.com/disintegration/imaging"
 )
 
 func init() {
@@ -72,6 +79,9 @@ func main() {
     for !window.ShouldClose() {
 
         var w, h = window.GetSize()
+
+        utils.RESOLUTION_X = w
+        utils.RESOLUTION_Y = h
 
         var img = image.NewRGBA(image.Rect(0, 0, w, h))
 
@@ -223,7 +233,7 @@ func main() {
         exit.Draw(img, window)
 
 
-
+        flippedImg := imaging.FlipV(img)
 
 
         // window.SetShouldClose(true)
@@ -231,7 +241,7 @@ func main() {
         // -------------------------
 
         gl.BindTexture(gl.TEXTURE_2D, texture)
-        gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, int32(w), int32(h), 0, gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(img.Pix))
+        gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, int32(w), int32(h), 0, gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(flippedImg.Pix))
 
         gl.BlitFramebuffer(0, 0, int32(w), int32(h), 0, 0, int32(w), int32(h), gl.COLOR_BUFFER_BIT, gl.LINEAR)
 

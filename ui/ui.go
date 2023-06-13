@@ -4,11 +4,13 @@ import (
 	// "fmt"
 	"image"
 	"image/color"
-	"sync"
+	// "sync"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
 
 	"gutter/utils"
+
+  "image/draw"
 )
 
 type ScaleType bool
@@ -198,20 +200,26 @@ func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style) {
 		}
 	}
 
-	var wg sync.WaitGroup
-	wg.Add(width)
-	for i := 0; i < width; i++ {
-		go func(i int) {
-			for j := 0; j < height; j++ {
-        trueI := centerX - width/2 + i
-				trueJ := centerY - height/2 + j
-        trueJ = utils.RESOLUTION_Y - trueJ
-				img.Set(trueI, trueJ, color.RGBA{byte(r), byte(g), byte(b), 255})
-			}
-			wg.Done()
-		}(i)
-	}
-	wg.Wait()
+  rect := image.Rect(centerX - width/2, centerY - height/2, centerX + width/2, centerY + height/2)
+
+  color := color.RGBA{byte(r), byte(g), byte(b), 255}
+
+  draw.Draw(img, rect, &image.Uniform{color}, image.ZP, draw.Src)
+
+	// var wg sync.WaitGroup
+	// wg.Add(width)
+	// for i := 0; i < width; i++ {
+	// 	go func(i int) {
+	// 		for j := 0; j < height; j++ {
+ //        trueI := centerX - width/2 + i
+	// 			trueJ := centerY - height/2 + j
+ //        // trueJ = utils.RESOLUTION_Y - trueJ
+	// 			img.Set(trueI, trueJ, color.RGBA{byte(r), byte(g), byte(b), 255})
+	// 		}
+	// 		wg.Done()
+	// 	}(i)
+	// }
+	// wg.Wait()
 }
 
 func GetScreenSize(props Properties) (int, int) {
