@@ -157,6 +157,9 @@ func DefaultProperties(props Properties, skip SkipAlignment) Properties {
 
 type Style struct {
 	Color color.Color
+  BorderColor color.Color
+  BorderWidth int
+
 }
 
 type StyleText struct {
@@ -185,13 +188,13 @@ func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style) {
 
 	if x > float64(centerX - width/2) && x < float64(centerX + width/2) && y > float64(centerY - height/2) && y < float64(centerY + height/2) {
 		if r % 255 > 30 {
-			r = 0
+			r -= 30
 		}
 		if g % 255 > 30 {
-			g = 0
+			g -= 30
 		}
 		if b % 255 > 30 {
-			b = 0
+			b -= 30 
 		}
 		if window.GetMouseButton(glfw.MouseButtonLeft) == glfw.Press {
 			if props.Function != nil {
@@ -201,6 +204,12 @@ func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style) {
 	}
 
   rect := image.Rect(centerX - width/2, centerY - height/2, centerX + width/2, centerY + height/2)
+
+  // cornerRadius := 20
+
+  // corner := image.Point{cornerRadius, cornerRadius}
+
+  // rect = rect.Sub(corner).Inset(-cornerRadius)
 
   color := color.RGBA{byte(r), byte(g), byte(b), 255}
 

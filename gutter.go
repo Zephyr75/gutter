@@ -90,15 +90,15 @@ func main() {
         // -------------------------
 
         
-        green := color.RGBA{0, 255, 0, 255}
-        white := color.RGBA{255, 255, 255, 255}
-        // blue := color.RGBA{0, 0, 255, 255}
-        red := color.RGBA{255, 0, 0, 255}
-        black := color.RGBA{0, 0, 0, 255}
+        green := color.RGBA{158, 206, 106, 255}
+        white := color.RGBA{192, 202, 245, 255}
+        blue := color.RGBA{122, 162, 247, 255}
+        red := color.RGBA{247, 118, 142, 255}
+        black := color.RGBA{36, 40, 59, 255}
 
         parent := ui.Row{
           Style: ui.Style{
-            Color: black,
+            Color: white,
           },
           Children: []ui.UIElement{
             ui.Button{
@@ -203,7 +203,7 @@ func main() {
                 StyleText: ui.StyleText{
                   Font: "JBMono.ttf",
                   FontSize: 20,
-                  FontColor: color.RGBA{0, 0, 0, 255},
+                  FontColor: black,
                 },
               },
             },
@@ -226,7 +226,7 @@ func main() {
             },
           },
           Style: ui.Style{
-            Color: color.RGBA{255, 255, 255, 255},
+            Color: blue,
           },
         }
 
