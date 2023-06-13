@@ -132,6 +132,7 @@ func main() {
                   },
                   Style: ui.Style{
                     Color: green,
+                    CornerRadius: 25,
                   },
                 },
                 ui.Button{
@@ -146,52 +147,15 @@ func main() {
                     Color: red,
                     BorderColor: white,
                     BorderWidth: 10,
+                    CornerRadius: 25,
                   },
                 },
               },
             },
-            // ui.Button{
-            //   Properties: ui.Properties{
-            //     Size: ui.Size{
-            //       Scale:  ui.ScaleRelative,
-            //       Width:  50,
-            //       Height: 100,
-            //     }, 
-            //   },
-            //   Style: ui.Style{
-            //     Color: green,
-            //   },
-            // },
-            // ui.Button{
-            //   Properties: ui.Properties{
-            //     Size: ui.Size{
-            //       Scale:  ui.ScalePixel,
-            //       Width:  200,
-            //       Height: 100,
-            //     }, 
-            //   },
-            //   Style: ui.Style{
-            //     Color: blue,
-            //   },
-            // },
             ui.Button{
               Style: ui.Style{
                 Color: red,
               },
-              // Child: ui.Button{
-              //   Properties: ui.Properties{
-              //     Size: ui.Size{
-              //       Scale:  ui.ScalePixel,
-              //       Width:  50,
-              //       Height: 50,
-              //     },
-              //     Alignment: ui.AlignmentCenter,
-              //   },
-              //   Style: ui.Style{
-              //     Color: blue,
-              //   },
-              // },
-
               Child: ui.Text{
                 Properties: ui.Properties{
                   Alignment: ui.AlignmentTopLeft,
@@ -203,7 +167,7 @@ func main() {
                   },
                 },
                 StyleText: ui.StyleText{
-                  Font: "JBMono.ttf",
+                  Font: "Comfortaa.ttf",
                   FontSize: 20,
                   FontColor: black,
                 },
@@ -219,9 +183,9 @@ func main() {
             Alignment: ui.AlignmentTopLeft,
             // Padding: ui.PaddingEqual(ui.ScaleRelative, 25), 
             Size: ui.Size{
-              Scale:  ui.ScaleRelative,
-              Width:  10,
-              Height: 10,
+              Scale:  ui.ScalePixel,
+              Width:  50,
+              Height: 30,
             },
             Function: func() {
               window.SetShouldClose(true)

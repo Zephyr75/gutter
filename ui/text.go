@@ -40,7 +40,7 @@ func (text Text) Draw(img *image.RGBA, window *glfw.Window) {
 
 
 
-	drawText(img, []string{"Hello, World!"}, text.StyleText.Font, float64(text.StyleText.FontSize), text.StyleText.FontColor, text.Properties.Center.X, text.Properties.Center.Y)
+	drawText(img, []string{"Hello, World!","sdgsg"}, text.StyleText.Font, float64(text.StyleText.FontSize), text.StyleText.FontColor, text.Properties.Center.X, text.Properties.Center.Y)
 
 }
 

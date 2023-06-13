@@ -161,6 +161,7 @@ type Style struct {
 	Color color.Color
   BorderColor color.Color
   BorderWidth int
+  CornerRadius int
 
 }
 
@@ -216,7 +217,7 @@ func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style) {
 
   borderWidth := style.BorderWidth
 
-  cornerRadius := 20
+  cornerRadius := style.CornerRadius
 
 
   
