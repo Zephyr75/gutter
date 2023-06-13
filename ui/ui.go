@@ -10,7 +10,7 @@ import (
 
 	"github.com/go-gl/glfw/v3.3/glfw"
 
-	"gutter/utils"
+	"github.com/Zephyr75/gutter/utils"
 
   "image/draw"
 )

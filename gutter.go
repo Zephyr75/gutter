@@ -14,8 +14,8 @@ import (
 	"github.com/go-gl/gl/all-core/gl"
 	"github.com/go-gl/glfw/v3.3/glfw"
 
-	"gutter/ui"
-	"gutter/utils"
+	"github.com/Zephyr75/gutter/ui"
+	"github.com/Zephyr75/gutter/utils"
 
 	"github.com/disintegration/imaging"
 )

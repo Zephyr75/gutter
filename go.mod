@@ -1,4 +1,4 @@
-module gutter
+module github.com/Zephyr75/gutter
 
 go 1.20
 
