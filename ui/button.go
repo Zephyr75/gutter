@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"fmt"
+	// "fmt"
 	"image"
 	// "image/color"
 
@@ -23,13 +23,13 @@ func (button Button) Initialize(skip SkipAlignment) UIElement {
 func (button Button) Draw(img *image.RGBA, window *glfw.Window) {
 
   // get color
-  _, _, b, _ := button.Style.Color.RGBA()
+  // _, _, b, _ := button.Style.Color.RGBA()
 
-  if b > 200 {
-    fmt.Println("--------------------")
-    fmt.Println(button.Properties.Parent)
-    fmt.Println(button)
-  }
+  // if b > 200 {
+  //   fmt.Println("--------------------")
+  //   fmt.Println(button.Properties.Parent)
+  //   fmt.Println(button)
+  // }
 
   if !button.Properties.Initialized {
     button = button.Initialize(SkipAlignmentNone).(Button)
@@ -46,9 +46,9 @@ func (button Button) Draw(img *image.RGBA, window *glfw.Window) {
     button.Child = button.Child.Initialize(SkipAlignmentNone)
   }
 
-  if b > 200 {
-    fmt.Println(button)
-  }
+  // if b > 200 {
+  //   fmt.Println(button)
+  // }
 
 	Draw(img, window, button.Properties, button.Style)
 	

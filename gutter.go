@@ -228,7 +228,6 @@ func main() {
 
         // window.SetShouldClose(true)
 
-
         // -------------------------
 
         gl.BindTexture(gl.TEXTURE_2D, texture)
