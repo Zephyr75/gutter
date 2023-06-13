@@ -190,13 +190,13 @@ func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style) {
 
 	if x > float64(centerX - width/2) && x < float64(centerX + width/2) && y > float64(centerY - height/2) && y < float64(centerY + height/2) {
 		if r % 255 > 30 {
-			r -= 30
+			r -= 20
 		}
 		if g % 255 > 30 {
-			g -= 30
+			g -= 20
 		}
 		if b % 255 > 30 {
-			b -= 30 
+			b -= 20 
 		}
 		if window.GetMouseButton(glfw.MouseButtonLeft) == glfw.Press {
 			if props.Function != nil {
@@ -206,7 +206,38 @@ func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style) {
 	}
   col := color.RGBA{byte(r), byte(g), byte(b), 255}
 
+  r2, g2, b2, _ := style.Color.RGBA()
+
+  if style.BorderColor != nil {
+    r2, g2, b2, _ = style.BorderColor.RGBA()
+  }
+
+  col2 := color.RGBA{byte(r2), byte(g2), byte(b2), 255}
+
+  borderWidth := style.BorderWidth
+
   cornerRadius := 20
+
+
+  
+
+  topLeft := Point{centerX - width/2 + cornerRadius, centerY - height/2 + cornerRadius}
+  topRight := Point{centerX + width/2 - cornerRadius, centerY - height/2 + cornerRadius}
+  bottomLeft := Point{centerX - width/2 + cornerRadius, centerY + height/2 - cornerRadius}
+  bottomRight := Point{centerX + width/2 - cornerRadius, centerY + height/2 - cornerRadius}
+
+
+
+  drawCircle(img, topLeft.X, topLeft.Y, cornerRadius, col2)
+  drawCircle(img, topRight.X, topRight.Y, cornerRadius, col2)
+  drawCircle(img, bottomLeft.X, bottomLeft.Y, cornerRadius, col2)
+  drawCircle(img, bottomRight.X, bottomRight.Y, cornerRadius, col2)
+
+  drawCircle(img, topLeft.X, topLeft.Y, cornerRadius - borderWidth, col)
+  drawCircle(img, topRight.X, topRight.Y, cornerRadius - borderWidth, col)
+  drawCircle(img, bottomLeft.X, bottomLeft.Y, cornerRadius - borderWidth, col)
+  drawCircle(img, bottomRight.X, bottomRight.Y, cornerRadius - borderWidth, col)
+
 
   rect := image.Rect(centerX - width/2 + cornerRadius, centerY - height/2 + cornerRadius, centerX + width/2 - cornerRadius, centerY + height/2 - cornerRadius)
   draw.Draw(img, rect, &image.Uniform{col}, image.ZP, draw.Src)
@@ -224,84 +255,25 @@ func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style) {
   draw.Draw(img, rect, &image.Uniform{col}, image.ZP, draw.Src)
 
 
+  // border rect 
+  rect = image.Rect(centerX - width/2 + cornerRadius, centerY - height/2, centerX + width/2 - cornerRadius, centerY - height/2 + borderWidth)
+  draw.Draw(img, rect, &image.Uniform{col2}, image.ZP, draw.Src)
+  
+  rect = image.Rect(centerX - width/2 + cornerRadius, centerY + height/2 - borderWidth, centerX + width/2 - cornerRadius, centerY + height/2)
+  draw.Draw(img, rect, &image.Uniform{col2}, image.ZP, draw.Src)
 
-  topLeft := Point{centerX - width/2 + cornerRadius, centerY - height/2 + cornerRadius}
-  topRight := Point{centerX + width/2 - cornerRadius, centerY - height/2 + cornerRadius}
-  bottomLeft := Point{centerX - width/2 + cornerRadius, centerY + height/2 - cornerRadius}
-  bottomRight := Point{centerX + width/2 - cornerRadius, centerY + height/2 - cornerRadius}
+  rect = image.Rect(centerX - width/2, centerY - height/2 + cornerRadius, centerX - width/2 + borderWidth, centerY + height/2 - cornerRadius)
+  draw.Draw(img, rect, &image.Uniform{col2}, image.ZP, draw.Src)
 
-  drawCircle(img, topLeft.X, topLeft.Y, cornerRadius, col)
-  drawCircle(img, topRight.X, topRight.Y, cornerRadius, col)
-  drawCircle(img, bottomLeft.X, bottomLeft.Y, cornerRadius, col)
-  drawCircle(img, bottomRight.X, bottomRight.Y, cornerRadius, col)
-
-  // for j := 0; j < height; j++ {
-  //   for i := 0; i < width; i++ {
-  //     trueI := centerX - width/2 + i
-  //     trueJ := centerY - height/2 + j
-  //     //remove all points close to the corners
-  //     distTopLeft := math.Sqrt(math.Pow(float64(trueI - topLeft.X), 2) + math.Pow(float64(trueJ - topLeft.Y), 2))
-  //     distTopRight := math.Sqrt(math.Pow(float64(trueI - topRight.X), 2) + math.Pow(float64(trueJ - topRight.Y), 2))
-  //     distBottomLeft := math.Sqrt(math.Pow(float64(trueI - bottomLeft.X), 2) + math.Pow(float64(trueJ - bottomLeft.Y), 2))
-  //     distBottomRight := math.Sqrt(math.Pow(float64(trueI - bottomRight.X), 2) + math.Pow(float64(trueJ - bottomRight.Y), 2))
-  //     if distTopLeft < float64(cornerRadius) || distTopRight < float64(cornerRadius) || distBottomLeft < float64(cornerRadius) || distBottomRight < float64(cornerRadius) {
-  //       img.Set(trueI, trueJ, col)
-  //     }
-  //   }
-  // }
+  rect = image.Rect(centerX + width/2 - borderWidth, centerY - height/2 + cornerRadius, centerX + width/2, centerY + height/2 - cornerRadius)
+  draw.Draw(img, rect, &image.Uniform{col2}, image.ZP, draw.Src)
 
 
 
-
-  // cornerRadius := 20
-
-  // corner := image.Point{cornerRadius, cornerRadius}
-
-  // rect = rect.Sub(corner).Inset(-cornerRadius)
-
-
-	// var wg sync.WaitGroup
-	// wg.Add(width)
-	// for i := 0; i < width; i++ {
-	// 	go func(i int) {
-	// 		for j := 0; j < height; j++ {
- //        trueI := centerX - width/2 + i
-	// 			trueJ := centerY - height/2 + j
- //        // trueJ = utils.RESOLUTION_Y - trueJ
-	// 			img.Set(trueI, trueJ, color.RGBA{byte(r), byte(g), byte(b), 255})
-	// 		}
-	// 		wg.Done()
-	// 	}(i)
-	// }
-	// wg.Wait()
+  
 }
 
 func drawCircle(img draw.Image, x0, y0, r int, c color.Color) {
-    // x, y, dx, dy := r-1, 0, 1, 1
-    // err := dx - (r * 2)
-
-    // for x > y {
-    //     img.Set(x0+x, y0+y, c)
-    //     img.Set(x0+y, y0+x, c)
-    //     img.Set(x0-y, y0+x, c)
-    //     img.Set(x0-x, y0+y, c)
-    //     img.Set(x0-x, y0-y, c)
-    //     img.Set(x0-y, y0-x, c)
-    //     img.Set(x0+y, y0-x, c)
-    //     img.Set(x0+x, y0-y, c)
-
-    //     if err <= 0 {
-    //         y++
-    //         err += dy
-    //         dy += 2
-    //     }
-    //     if err > 0 {
-    //         x--
-    //         dx += 2
-    //         err += dx - (r * 2)
-    //     }
-    // }
-
     for j := y0 - r; j < y0 + r; j++ {
       for i := x0 - r; i < x0 + r; i++ {
         if math.Sqrt(math.Pow(float64(i - x0), 2) + math.Pow(float64(j - y0), 2)) < float64(r) {

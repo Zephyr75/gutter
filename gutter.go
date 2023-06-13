@@ -94,11 +94,11 @@ func main() {
         white := color.RGBA{192, 202, 245, 255}
         blue := color.RGBA{122, 162, 247, 255}
         red := color.RGBA{247, 118, 142, 255}
-        black := color.RGBA{36, 40, 59, 255}
+        black := color.RGBA{26, 27, 38, 255}
 
         parent := ui.Row{
           Style: ui.Style{
-            Color: white,
+            Color: black,
           },
           Children: []ui.UIElement{
             ui.Button{
@@ -119,7 +119,7 @@ func main() {
                 Padding: ui.PaddingSideBySide(ui.ScaleRelative, 0, 25, 25, 0),
               },
               Style: ui.Style{
-                Color: white,
+                Color: black,
               },
               Children: []ui.UIElement{
                 ui.Button{
@@ -144,6 +144,8 @@ func main() {
                   },
                   Style: ui.Style{
                     Color: red,
+                    BorderColor: white,
+                    BorderWidth: 10,
                   },
                 },
               },
@@ -192,7 +194,7 @@ func main() {
 
               Child: ui.Text{
                 Properties: ui.Properties{
-                  Alignment: ui.AlignmentCenter,
+                  Alignment: ui.AlignmentTopLeft,
                   //Padding:   ui.PaddingEqual(ui.ScalePixel, 100),
                   Size: ui.Size{
                     Scale:  ui.ScalePixel,
