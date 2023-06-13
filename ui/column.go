@@ -14,8 +14,8 @@ type Column struct {
 	Children   []UIElement
 }
 
-func (column Column) Initialize(skipAlignment bool) UIElement {
-  column.Properties = DefaultProperties(column.Properties, skipAlignment)
+func (column Column) Initialize(skip SkipAlignment) UIElement {
+  column.Properties = DefaultProperties(column.Properties, skip)
   return column
 }
 
@@ -23,20 +23,18 @@ func (column Column) Draw(img *image.RGBA, window *glfw.Window) {
   // fmt.Println("--------------------")
 
   if !column.Properties.Initialized {
-    column = column.Initialize(false).(Column)
+    column = column.Initialize(SkipAlignmentNone).(Column)
   }
 
   column = ApplyRelative(column).(Column)
 
-  if !column.Properties.SkipAlignment {
-    column = ApplyAlignment(column).(Column)
-  }
+  column = ApplyAlignment(column).(Column)
 
   column = ApplyPadding(column).(Column)
 
   for i, child := range column.Children {
     child = child.SetParent(&column.Properties)
-    column.Children[i] = child.Initialize(true)
+    column.Children[i] = child.Initialize(SkipAlignmentVert)
   }
 
   // fmt.Println("Column")

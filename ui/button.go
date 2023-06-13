@@ -15,8 +15,8 @@ type Button struct {
 	Child      UIElement
 }
 
-func (button Button) Initialize(skipAlignment bool) UIElement {
-  button.Properties = DefaultProperties(button.Properties, skipAlignment)
+func (button Button) Initialize(skip SkipAlignment) UIElement {
+  button.Properties = DefaultProperties(button.Properties, skip)
   return button
 }
 
@@ -32,20 +32,18 @@ func (button Button) Draw(img *image.RGBA, window *glfw.Window) {
   }
 
   if !button.Properties.Initialized {
-    button = button.Initialize(false).(Button)
+    button = button.Initialize(SkipAlignmentNone).(Button)
   }
 
   button = ApplyRelative(button).(Button)
 
-  if !button.Properties.SkipAlignment {
-    button = ApplyAlignment(button).(Button)
-  }
+  button = ApplyAlignment(button).(Button)
 
   button = ApplyPadding(button).(Button)
 
   if button.Child != nil {
     button.Child = button.Child.SetParent(&button.Properties)
-    button.Child = button.Child.Initialize(false)
+    button.Child = button.Child.Initialize(SkipAlignmentNone)
   }
 
   if b > 200 {

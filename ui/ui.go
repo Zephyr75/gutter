@@ -74,6 +74,14 @@ const (
 	AlignmentBottomRight Alignment = 8
 )
 
+type SkipAlignment byte
+
+const (
+  SkipAlignmentNone SkipAlignment = 0
+  SkipAlignmentHoriz SkipAlignment = 1
+  SkipAlignmentVert SkipAlignment = 2
+)
+
 /*
 Size
 */
@@ -88,7 +96,7 @@ type UIElement interface {
 	SetProperties(size Size, center Point) UIElement
   GetProperties() Properties
 	Debug()
-  Initialize(skipAlignment bool) UIElement
+  Initialize(skip SkipAlignment) UIElement
   SetParent(parent *Properties) UIElement
 }
 
@@ -100,10 +108,10 @@ type Properties struct {
 	Function  func()
   Parent    *Properties
   Initialized bool
-  SkipAlignment bool
+  Skip       SkipAlignment
 }
 
-func DefaultProperties(props Properties, skipAlignment bool) Properties {
+func DefaultProperties(props Properties, skip SkipAlignment) Properties {
   newSize := props.Size
   if props.Size.Width == 0 && props.Size.Height == 0 {
     newSize = Size{ScaleRelative, 100, 100}
@@ -128,6 +136,7 @@ func DefaultProperties(props Properties, skipAlignment bool) Properties {
       Function: nil,
       Parent: nil,
       Initialized: true,
+      Skip: skip,
     }
   }
 
@@ -140,7 +149,7 @@ func DefaultProperties(props Properties, skipAlignment bool) Properties {
     Function: props.Function,
     Parent: newParent,
     Initialized: true,
-    SkipAlignment: skipAlignment,
+    Skip: skip,
   }
 }
 
@@ -278,6 +287,13 @@ func ApplyAlignment(element UIElement) UIElement {
   case AlignmentBottomRight:
     newX = parent.Center.X + parent.Size.Width / 2 - props.Size.Width / 2
     newY = parent.Center.Y + parent.Size.Height / 2 - props.Size.Height / 2
+  }
+
+  switch props.Skip {
+  case SkipAlignmentHoriz:
+    newX = props.Center.X
+  case SkipAlignmentVert:
+    newY = props.Center.Y
   }
 
   newCenter := Point{newX, newY}
