@@ -6,7 +6,7 @@ import (
 	"image/color"
 	// "sync"
 
-  // "math"
+  "math"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
 
@@ -242,10 +242,34 @@ func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style, f
 
   cornerRadius := style.CornerRadius
 
-
-
   // Create a mask with rounded corners
-  // mask := image.NewRGBA(image.Rect(0, 0, width, height))
+  mask := image.NewRGBA(image.Rect(0, 0, width, height))
+
+  draw.Draw(mask, mask.Bounds(), &image.Uniform{color.White}, image.ZP, draw.Src)
+
+  // topLeft := Point{centerX - width/2, centerY - height/2 + cornerRadius}
+  // topRight := Point{centerX + width/2, centerY - height/2 + cornerRadius}
+  // bottomLeft := Point{centerX - width/2, centerY + height/2}
+  // bottomRight := Point{centerX + width/2, centerY + height/2}
+
+
+  // Parallelize?
+	for y := 0; y <= cornerRadius; y++ {
+		l := math.Round(float64(cornerRadius) - math.Sqrt(float64(2*y*cornerRadius-y*y)))
+    for x := 0; x <= int(l); x++ {
+      mask.Set(x-1, y-1, color.Transparent)
+    }
+    for x := 0; x <= int(l); x++ {
+      mask.Set(width-x, y-1, color.Transparent)
+    }
+    for x := 0; x <= int(l); x++ {
+      mask.Set(x-1, height-y, color.Transparent)
+    }
+    for x := 0; x <= int(l); x++ {
+      mask.Set(width-x, height-y, color.Transparent)
+    }
+	}
+
   // radius := 20 // Adjust the radius to control the corner roundness
 
   // for y := 0; y < height; y++ {
@@ -259,13 +283,6 @@ func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style, f
   //       }
   //   }
   // }
-
-  // topLeft := Point{centerX - width/2 + cornerRadius, centerY - height/2 + cornerRadius}
-  // topRight := Point{centerX + width/2 - cornerRadius, centerY - height/2 + cornerRadius}
-  // bottomLeft := Point{centerX - width/2 + cornerRadius, centerY + height/2 - cornerRadius}
-  // bottomRight := Point{centerX + width/2 - cornerRadius, centerY + height/2 - cornerRadius}
-
-
 
   // drawCircle(img, topLeft.X, topLeft.Y, cornerRadius, col2)
   // drawCircle(img, topRight.X, topRight.Y, cornerRadius, col2)
@@ -281,11 +298,12 @@ func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style, f
   texture = image.NewUniform(col)
   if file != "" {
     texture, _ = getImageFromFilePath(file)
-    texture = resize.Resize(uint(width - 2 * cornerRadius), uint(height - 2 * cornerRadius), texture, resize.Lanczos3)
+    texture = resize.Resize(uint(width - 2), uint(height - 2), texture, resize.Lanczos3)
   }
 
   rect := image.Rect(centerX - width/2, centerY - height/2, centerX + width/2, centerY + height/2)
-  draw.Draw(img, rect, texture, image.ZP, draw.Src)
+  // draw.Draw(img, rect, texture, image.ZP, draw.Src)
+  draw.DrawMask(img, rect, texture, image.ZP, mask, image.ZP, draw.Over)
 
 
   // rect := image.Rect(centerX - width/2 + cornerRadius, centerY - height/2 + cornerRadius, centerX + width/2 - cornerRadius, centerY + height/2 - cornerRadius)
