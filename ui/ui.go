@@ -257,21 +257,36 @@ func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style, f
 		l := math.Round(float64(cornerRadius) - math.Sqrt(float64(2*y*cornerRadius-y*y)))
     for x := 0; x <= int(l); x++ {
       mask.Set(x-1, y-1, color.Transparent)
-      offsetMask.Set(borderWidth+x-1, borderWidth+y-1, color.Transparent)
     }
     for x := 0; x <= int(l); x++ {
       mask.Set(width-x, y-1, color.Transparent)
-      offsetMask.Set(width-borderWidth-x, borderWidth+y-1, color.Transparent)
     }
     for x := 0; x <= int(l); x++ {
       mask.Set(x-1, height-y, color.Transparent)
-      offsetMask.Set(borderWidth+x-1, height-borderWidth-y, color.Transparent)
     }
     for x := 0; x <= int(l); x++ {
       mask.Set(width-x, height-y, color.Transparent)
+    }
+	}
+
+  smallCornerRadius := cornerRadius - borderWidth
+  for y := 0; y <= smallCornerRadius; y++ {
+		l := math.Round(float64(smallCornerRadius) - math.Sqrt(float64(2*y*smallCornerRadius-y*y)))
+    for x := 0; x <= int(l); x++ {
+      offsetMask.Set(borderWidth+x-1, borderWidth+y-1, color.Transparent)
+    }
+    for x := 0; x <= int(l); x++ {
+      offsetMask.Set(width-borderWidth-x, borderWidth+y-1, color.Transparent)
+    }
+    for x := 0; x <= int(l); x++ {
+      offsetMask.Set(borderWidth+x-1, height-borderWidth-y, color.Transparent)
+    }
+    for x := 0; x <= int(l); x++ {
       offsetMask.Set(width-borderWidth-x, height-borderWidth-y, color.Transparent)
     }
 	}
+
+
 
   for x := 0; x <= width; x++ {
     for y := 0; y <= borderWidth; y++ {
@@ -340,8 +355,6 @@ func ApplyAlignment(element UIElement) UIElement {
   parent := props.Parent
   newX := props.Center.X
   newY := props.Center.Y
-
-
   
   switch props.Alignment {
   case AlignmentCenter:
