@@ -203,8 +203,10 @@ func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style, f
 
   // fmt.Println("Draw: ", props.Center.X, " ", props.Center.Y, " ", props.Size.Width, " ", props.Size.Height)
 
-	width, height := GetScreenSize(props)
-	centerX, centerY := GetScreenCenter(props)
+  width := props.Size.Width
+  height := props.Size.Height
+  centerX := props.Center.X
+  centerY := props.Center.Y
 
   // fmt.Println("Center: ", centerX, " ", centerY, " ", width, " ", height)
 
@@ -230,143 +232,86 @@ func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style, f
 	}
   col := color.RGBA{byte(r), byte(g), byte(b), 255}
 
-  // r2, g2, b2, _ := style.Color.RGBA()
+  r2, g2, b2, _ := style.Color.RGBA()
 
-  // if style.BorderColor != nil {
-  //   r2, g2, b2, _ = style.BorderColor.RGBA()
-  // }
+  if style.BorderColor != nil {
+    r2, g2, b2, _ = style.BorderColor.RGBA()
+  }
 
-  // col2 := color.RGBA{byte(r2), byte(g2), byte(b2), 255}
+  colBorder := color.RGBA{byte(r2), byte(g2), byte(b2), 255}
 
-  // borderWidth := style.BorderWidth
+  borderWidth := style.BorderWidth
 
   cornerRadius := style.CornerRadius
 
   // Create a mask with rounded corners
   mask := image.NewRGBA(image.Rect(0, 0, width, height))
+  draw.Draw(mask, mask.Bounds(), &image.Uniform{color.White}, image.Point{}, draw.Src)
 
-  draw.Draw(mask, mask.Bounds(), &image.Uniform{color.White}, image.ZP, draw.Src)
-
-  // topLeft := Point{centerX - width/2, centerY - height/2 + cornerRadius}
-  // topRight := Point{centerX + width/2, centerY - height/2 + cornerRadius}
-  // bottomLeft := Point{centerX - width/2, centerY + height/2}
-  // bottomRight := Point{centerX + width/2, centerY + height/2}
+  offsetMask := image.NewRGBA(image.Rect(0, 0, width, height))
+  draw.Draw(offsetMask, offsetMask.Bounds(), &image.Uniform{color.White}, image.Point{}, draw.Src)
 
 
-  // Parallelize?
+  // Outside mask
 	for y := 0; y <= cornerRadius; y++ {
 		l := math.Round(float64(cornerRadius) - math.Sqrt(float64(2*y*cornerRadius-y*y)))
     for x := 0; x <= int(l); x++ {
       mask.Set(x-1, y-1, color.Transparent)
+      offsetMask.Set(borderWidth+x-1, borderWidth+y-1, color.Transparent)
     }
     for x := 0; x <= int(l); x++ {
       mask.Set(width-x, y-1, color.Transparent)
+      offsetMask.Set(width-borderWidth-x, borderWidth+y-1, color.Transparent)
     }
     for x := 0; x <= int(l); x++ {
       mask.Set(x-1, height-y, color.Transparent)
+      offsetMask.Set(borderWidth+x-1, height-borderWidth-y, color.Transparent)
     }
     for x := 0; x <= int(l); x++ {
       mask.Set(width-x, height-y, color.Transparent)
+      offsetMask.Set(width-borderWidth-x, height-borderWidth-y, color.Transparent)
     }
 	}
 
-  // radius := 20 // Adjust the radius to control the corner roundness
+  for x := 0; x <= width; x++ {
+    for y := 0; y <= borderWidth; y++ {
+      offsetMask.Set(x, y, color.Transparent)
+      offsetMask.Set(x, height-y, color.Transparent)
+    }
+  }
+  for y := 0; y <= height; y++ {
+    for x := 0; x <= borderWidth; x++ {
+      offsetMask.Set(x, y, color.Transparent)
+      offsetMask.Set(width-x, y, color.Transparent)
+    }
+  }
 
-  // for y := 0; y < height; y++ {
-  //   for x := 0; x < width; x++ {
-  //       dx := x - width/2
-  //       dy := y - height/2
-  //       if dx*dx+dy*dy >= radius*radius {
-  //           mask.Set(x, y, color.Transparent)
-  //       } else {
-  //           mask.Set(x, y, color.White)
-  //       }
-  //   }
-  // }
-
-  // drawCircle(img, topLeft.X, topLeft.Y, cornerRadius, col2)
-  // drawCircle(img, topRight.X, topRight.Y, cornerRadius, col2)
-  // drawCircle(img, bottomLeft.X, bottomLeft.Y, cornerRadius, col2)
-  // drawCircle(img, bottomRight.X, bottomRight.Y, cornerRadius, col2)
-
-  // drawCircle(img, topLeft.X, topLeft.Y, cornerRadius - borderWidth, col)
-  // drawCircle(img, topRight.X, topRight.Y, cornerRadius - borderWidth, col)
-  // drawCircle(img, bottomLeft.X, bottomLeft.Y, cornerRadius - borderWidth, col)
-  // drawCircle(img, bottomRight.X, bottomRight.Y, cornerRadius - borderWidth, col)
-
-  var texture image.Image
+  var texture, borderTexture image.Image
   texture = image.NewUniform(col)
+  borderTexture = image.NewUniform(colBorder)
   if file != "" {
     texture, _ = getImageFromFilePath(file)
     texture = resize.Resize(uint(width - 2), uint(height - 2), texture, resize.Lanczos3)
   }
 
   rect := image.Rect(centerX - width/2, centerY - height/2, centerX + width/2, centerY + height/2)
-  // draw.Draw(img, rect, texture, image.ZP, draw.Src)
-  draw.DrawMask(img, rect, texture, image.ZP, mask, image.ZP, draw.Over)
-
-
-  // rect := image.Rect(centerX - width/2 + cornerRadius, centerY - height/2 + cornerRadius, centerX + width/2 - cornerRadius, centerY + height/2 - cornerRadius)
-  // draw.Draw(img, rect, texture, image.ZP, draw.Src)
-
-  // rect = image.Rect(centerX - width/2, centerY - height/2 + cornerRadius, centerX - width/2 + cornerRadius, centerY + height/2 - cornerRadius)
-  // draw.Draw(img, rect, texture, image.ZP, draw.Src)
-
-  // rect = image.Rect(centerX + width/2 - cornerRadius, centerY - height/2 + cornerRadius, centerX + width/2, centerY + height/2 - cornerRadius)
-  // draw.Draw(img, rect, texture, image.ZP, draw.Src)
-
-  // rect = image.Rect(centerX - width/2 + cornerRadius, centerY - height/2, centerX + width/2 - cornerRadius, centerY - height/2 + cornerRadius)
-  // draw.Draw(img, rect, texture, image.ZP, draw.Src)
-
-  // rect = image.Rect(centerX - width/2 + cornerRadius, centerY + height/2 - cornerRadius, centerX + width/2 - cornerRadius, centerY + height/2)
-  // draw.Draw(img, rect, texture, image.ZP, draw.Src)
-
-
-  // border rect 
-  // rect = image.Rect(centerX - width/2 + cornerRadius, centerY - height/2, centerX + width/2 - cornerRadius, centerY - height/2 + borderWidth)
-  // draw.Draw(img, rect, &image.Uniform{col2}, image.ZP, draw.Src)
-  // 
-  // rect = image.Rect(centerX - width/2 + cornerRadius, centerY + height/2 - borderWidth, centerX + width/2 - cornerRadius, centerY + height/2)
-  // draw.Draw(img, rect, &image.Uniform{col2}, image.ZP, draw.Src)
-
-  // rect = image.Rect(centerX - width/2, centerY - height/2 + cornerRadius, centerX - width/2 + borderWidth, centerY + height/2 - cornerRadius)
-  // draw.Draw(img, rect, &image.Uniform{col2}, image.ZP, draw.Src)
-
-  // rect = image.Rect(centerX + width/2 - borderWidth, centerY - height/2 + cornerRadius, centerX + width/2, centerY + height/2 - cornerRadius)
-  // draw.Draw(img, rect, &image.Uniform{col2}, image.ZP, draw.Src)
-
-
-
+  if style.BorderWidth > 0 {
+    if style.CornerRadius > 0 {
+      draw.DrawMask(img, rect, borderTexture, image.Point{}, mask, image.Point{}, draw.Over)
+      draw.DrawMask(img, rect, texture, image.Point{}, offsetMask, image.Point{}, draw.Over)
+    } else {
+      draw.Draw(img, rect, borderTexture, image.Point{}, draw.Src)
+      draw.Draw(img, rect, texture, image.Point{}, draw.Src)
+    }
+  } else {
+    if style.CornerRadius > 0 {
+      draw.DrawMask(img, rect, texture, image.Point{}, mask, image.Point{}, draw.Over)
+    } else {
+      draw.Draw(img, rect, texture, image.Point{}, draw.Src)
+    }
+  }
   
 }
-
-// func drawCircle(img draw.Image, x0, y0, r int, c color.Color) {
-//     for j := y0 - r; j < y0 + r; j++ {
-//       for i := x0 - r; i < x0 + r; i++ {
-//         if math.Sqrt(math.Pow(float64(i - x0), 2) + math.Pow(float64(j - y0), 2)) < float64(r) {
-//           img.Set(i, j, c)
-//         }
-//       }
-//     }
-// }
-
-func GetScreenSize(props Properties) (int, int) {
-	width := props.Size.Width
-	height := props.Size.Height
-	// if props.Size.Scale == ScaleRelative {
- //    parentProps := props.Parent
- //    width = parentProps.Size.Width * props.Size.Width / 100
- //    height = parentProps.Size.Height * props.Size.Height / 100
-	// }
-	return width, height
-}
-
-func GetScreenCenter(props Properties) (int, int) {
-	centerX := props.Center.X
-	centerY := props.Center.Y
-  return centerX, centerY
-}
-
 
 func ApplyPadding(element UIElement) UIElement {
   props := element.GetProperties()
