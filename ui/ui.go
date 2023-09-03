@@ -6,13 +6,15 @@ import (
 	"image/color"
 	// "sync"
 
-  "math"
+  // "math"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
 
 	"github.com/Zephyr75/gutter/utils"
 
   "image/draw"
+  "os"
+  "github.com/nfnt/resize"
 )
 
 type ScaleType bool
@@ -104,6 +106,17 @@ type UIElement interface {
   SetParent(parent *Properties) UIElement
 }
 
+type UIType byte
+
+const (
+  UIContainer UIType = 0
+  UIButton UIType = 1
+  UIImage UIType = 2
+  UIRow UIType = 3
+  UIColumn UIType = 4
+  UIText UIType = 5
+)
+
 type Properties struct {
 	Center    Point
 	Size      Size
@@ -113,9 +126,10 @@ type Properties struct {
   Parent    *Properties
   Initialized bool
   Skip       SkipAlignment
+  Type       UIType
 }
 
-func DefaultProperties(props Properties, skip SkipAlignment) Properties {
+func DefaultProperties(props Properties, skip SkipAlignment, uitype UIType) Properties {
   newSize := props.Size
   if props.Size.Width == 0 && props.Size.Height == 0 {
     newSize = Size{ScaleRelative, 100, 100}
@@ -154,7 +168,16 @@ func DefaultProperties(props Properties, skip SkipAlignment) Properties {
     Parent: newParent,
     Initialized: true,
     Skip: skip,
+    Type: uitype,
   }
+}
+
+func DefaultStyle (style Style) Style {
+  newStyle := style
+  if newStyle.Color == nil {
+    newStyle.Color = color.RGBA{0, 0, 0, 255}
+  }
+  return newStyle
 }
 
 type Style struct {
@@ -176,7 +199,7 @@ type Point struct {
 	Y int
 }
 
-func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style) {
+func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style, file string) {
 
   // fmt.Println("Draw: ", props.Center.X, " ", props.Center.Y, " ", props.Size.Width, " ", props.Size.Height)
 
@@ -189,7 +212,7 @@ func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style) {
 
 	r, g, b, _ := style.Color.RGBA()
 
-	if x > float64(centerX - width/2) && x < float64(centerX + width/2) && y > float64(centerY - height/2) && y < float64(centerY + height/2) {
+	if x > float64(centerX - width/2) && x < float64(centerX + width/2) && y > float64(centerY - height/2) && y < float64(centerY + height/2) && props.Type == UIButton {
 		if r % 255 > 30 {
 			r -= 20
 		}
@@ -207,91 +230,116 @@ func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style) {
 	}
   col := color.RGBA{byte(r), byte(g), byte(b), 255}
 
-  r2, g2, b2, _ := style.Color.RGBA()
+  // r2, g2, b2, _ := style.Color.RGBA()
 
-  if style.BorderColor != nil {
-    r2, g2, b2, _ = style.BorderColor.RGBA()
-  }
+  // if style.BorderColor != nil {
+  //   r2, g2, b2, _ = style.BorderColor.RGBA()
+  // }
 
-  col2 := color.RGBA{byte(r2), byte(g2), byte(b2), 255}
+  // col2 := color.RGBA{byte(r2), byte(g2), byte(b2), 255}
 
-  borderWidth := style.BorderWidth
+  // borderWidth := style.BorderWidth
 
   cornerRadius := style.CornerRadius
 
 
-  
 
-  topLeft := Point{centerX - width/2 + cornerRadius, centerY - height/2 + cornerRadius}
-  topRight := Point{centerX + width/2 - cornerRadius, centerY - height/2 + cornerRadius}
-  bottomLeft := Point{centerX - width/2 + cornerRadius, centerY + height/2 - cornerRadius}
-  bottomRight := Point{centerX + width/2 - cornerRadius, centerY + height/2 - cornerRadius}
+  // Create a mask with rounded corners
+  // mask := image.NewRGBA(image.Rect(0, 0, width, height))
+  // radius := 20 // Adjust the radius to control the corner roundness
+
+  // for y := 0; y < height; y++ {
+  //   for x := 0; x < width; x++ {
+  //       dx := x - width/2
+  //       dy := y - height/2
+  //       if dx*dx+dy*dy >= radius*radius {
+  //           mask.Set(x, y, color.Transparent)
+  //       } else {
+  //           mask.Set(x, y, color.White)
+  //       }
+  //   }
+  // }
+
+  // topLeft := Point{centerX - width/2 + cornerRadius, centerY - height/2 + cornerRadius}
+  // topRight := Point{centerX + width/2 - cornerRadius, centerY - height/2 + cornerRadius}
+  // bottomLeft := Point{centerX - width/2 + cornerRadius, centerY + height/2 - cornerRadius}
+  // bottomRight := Point{centerX + width/2 - cornerRadius, centerY + height/2 - cornerRadius}
 
 
 
-  drawCircle(img, topLeft.X, topLeft.Y, cornerRadius, col2)
-  drawCircle(img, topRight.X, topRight.Y, cornerRadius, col2)
-  drawCircle(img, bottomLeft.X, bottomLeft.Y, cornerRadius, col2)
-  drawCircle(img, bottomRight.X, bottomRight.Y, cornerRadius, col2)
+  // drawCircle(img, topLeft.X, topLeft.Y, cornerRadius, col2)
+  // drawCircle(img, topRight.X, topRight.Y, cornerRadius, col2)
+  // drawCircle(img, bottomLeft.X, bottomLeft.Y, cornerRadius, col2)
+  // drawCircle(img, bottomRight.X, bottomRight.Y, cornerRadius, col2)
 
-  drawCircle(img, topLeft.X, topLeft.Y, cornerRadius - borderWidth, col)
-  drawCircle(img, topRight.X, topRight.Y, cornerRadius - borderWidth, col)
-  drawCircle(img, bottomLeft.X, bottomLeft.Y, cornerRadius - borderWidth, col)
-  drawCircle(img, bottomRight.X, bottomRight.Y, cornerRadius - borderWidth, col)
+  // drawCircle(img, topLeft.X, topLeft.Y, cornerRadius - borderWidth, col)
+  // drawCircle(img, topRight.X, topRight.Y, cornerRadius - borderWidth, col)
+  // drawCircle(img, bottomLeft.X, bottomLeft.Y, cornerRadius - borderWidth, col)
+  // drawCircle(img, bottomRight.X, bottomRight.Y, cornerRadius - borderWidth, col)
+
+  var texture image.Image
+  texture = image.NewUniform(col)
+  if file != "" {
+    texture, _ = getImageFromFilePath(file)
+    texture = resize.Resize(uint(width - 2 * cornerRadius), uint(height - 2 * cornerRadius), texture, resize.Lanczos3)
+  }
+
+  rect := image.Rect(centerX - width/2, centerY - height/2, centerX + width/2, centerY + height/2)
+  draw.Draw(img, rect, texture, image.ZP, draw.Src)
 
 
-  rect := image.Rect(centerX - width/2 + cornerRadius, centerY - height/2 + cornerRadius, centerX + width/2 - cornerRadius, centerY + height/2 - cornerRadius)
-  draw.Draw(img, rect, &image.Uniform{col}, image.ZP, draw.Src)
+  // rect := image.Rect(centerX - width/2 + cornerRadius, centerY - height/2 + cornerRadius, centerX + width/2 - cornerRadius, centerY + height/2 - cornerRadius)
+  // draw.Draw(img, rect, texture, image.ZP, draw.Src)
 
-  rect = image.Rect(centerX - width/2, centerY - height/2 + cornerRadius, centerX - width/2 + cornerRadius, centerY + height/2 - cornerRadius)
-  draw.Draw(img, rect, &image.Uniform{col}, image.ZP, draw.Src)
+  // rect = image.Rect(centerX - width/2, centerY - height/2 + cornerRadius, centerX - width/2 + cornerRadius, centerY + height/2 - cornerRadius)
+  // draw.Draw(img, rect, texture, image.ZP, draw.Src)
 
-  rect = image.Rect(centerX + width/2 - cornerRadius, centerY - height/2 + cornerRadius, centerX + width/2, centerY + height/2 - cornerRadius)
-  draw.Draw(img, rect, &image.Uniform{col}, image.ZP, draw.Src)
+  // rect = image.Rect(centerX + width/2 - cornerRadius, centerY - height/2 + cornerRadius, centerX + width/2, centerY + height/2 - cornerRadius)
+  // draw.Draw(img, rect, texture, image.ZP, draw.Src)
 
-  rect = image.Rect(centerX - width/2 + cornerRadius, centerY - height/2, centerX + width/2 - cornerRadius, centerY - height/2 + cornerRadius)
-  draw.Draw(img, rect, &image.Uniform{col}, image.ZP, draw.Src)
+  // rect = image.Rect(centerX - width/2 + cornerRadius, centerY - height/2, centerX + width/2 - cornerRadius, centerY - height/2 + cornerRadius)
+  // draw.Draw(img, rect, texture, image.ZP, draw.Src)
 
-  rect = image.Rect(centerX - width/2 + cornerRadius, centerY + height/2 - cornerRadius, centerX + width/2 - cornerRadius, centerY + height/2)
-  draw.Draw(img, rect, &image.Uniform{col}, image.ZP, draw.Src)
+  // rect = image.Rect(centerX - width/2 + cornerRadius, centerY + height/2 - cornerRadius, centerX + width/2 - cornerRadius, centerY + height/2)
+  // draw.Draw(img, rect, texture, image.ZP, draw.Src)
 
 
   // border rect 
-  rect = image.Rect(centerX - width/2 + cornerRadius, centerY - height/2, centerX + width/2 - cornerRadius, centerY - height/2 + borderWidth)
-  draw.Draw(img, rect, &image.Uniform{col2}, image.ZP, draw.Src)
-  
-  rect = image.Rect(centerX - width/2 + cornerRadius, centerY + height/2 - borderWidth, centerX + width/2 - cornerRadius, centerY + height/2)
-  draw.Draw(img, rect, &image.Uniform{col2}, image.ZP, draw.Src)
+  // rect = image.Rect(centerX - width/2 + cornerRadius, centerY - height/2, centerX + width/2 - cornerRadius, centerY - height/2 + borderWidth)
+  // draw.Draw(img, rect, &image.Uniform{col2}, image.ZP, draw.Src)
+  // 
+  // rect = image.Rect(centerX - width/2 + cornerRadius, centerY + height/2 - borderWidth, centerX + width/2 - cornerRadius, centerY + height/2)
+  // draw.Draw(img, rect, &image.Uniform{col2}, image.ZP, draw.Src)
 
-  rect = image.Rect(centerX - width/2, centerY - height/2 + cornerRadius, centerX - width/2 + borderWidth, centerY + height/2 - cornerRadius)
-  draw.Draw(img, rect, &image.Uniform{col2}, image.ZP, draw.Src)
+  // rect = image.Rect(centerX - width/2, centerY - height/2 + cornerRadius, centerX - width/2 + borderWidth, centerY + height/2 - cornerRadius)
+  // draw.Draw(img, rect, &image.Uniform{col2}, image.ZP, draw.Src)
 
-  rect = image.Rect(centerX + width/2 - borderWidth, centerY - height/2 + cornerRadius, centerX + width/2, centerY + height/2 - cornerRadius)
-  draw.Draw(img, rect, &image.Uniform{col2}, image.ZP, draw.Src)
+  // rect = image.Rect(centerX + width/2 - borderWidth, centerY - height/2 + cornerRadius, centerX + width/2, centerY + height/2 - cornerRadius)
+  // draw.Draw(img, rect, &image.Uniform{col2}, image.ZP, draw.Src)
 
 
 
   
 }
 
-func drawCircle(img draw.Image, x0, y0, r int, c color.Color) {
-    for j := y0 - r; j < y0 + r; j++ {
-      for i := x0 - r; i < x0 + r; i++ {
-        if math.Sqrt(math.Pow(float64(i - x0), 2) + math.Pow(float64(j - y0), 2)) < float64(r) {
-          img.Set(i, j, c)
-        }
-      }
-    }
-}
+// func drawCircle(img draw.Image, x0, y0, r int, c color.Color) {
+//     for j := y0 - r; j < y0 + r; j++ {
+//       for i := x0 - r; i < x0 + r; i++ {
+//         if math.Sqrt(math.Pow(float64(i - x0), 2) + math.Pow(float64(j - y0), 2)) < float64(r) {
+//           img.Set(i, j, c)
+//         }
+//       }
+//     }
+// }
 
 func GetScreenSize(props Properties) (int, int) {
 	width := props.Size.Width
 	height := props.Size.Height
-	if props.Size.Scale == ScaleRelative {
-    parentProps := props.Parent
-    width = parentProps.Size.Width * props.Size.Width / 100
-    height = parentProps.Size.Height * props.Size.Height / 100
-	}
+	// if props.Size.Scale == ScaleRelative {
+ //    parentProps := props.Parent
+ //    width = parentProps.Size.Width * props.Size.Width / 100
+ //    height = parentProps.Size.Height * props.Size.Height / 100
+	// }
 	return width, height
 }
 
@@ -382,6 +430,16 @@ func ApplyRelative(element UIElement) UIElement {
   }
   newSize := Size{ScalePixel, newWidth, newHeight}
   return element.SetProperties(newSize, props.Center)
+}
+
+func getImageFromFilePath(filePath string) (image.Image, error) {
+    f, err := os.Open(filePath)
+    if err != nil {
+        return nil, err
+    }
+    defer f.Close()
+    image, _, err := image.Decode(f)
+    return image, err
 }
 
 

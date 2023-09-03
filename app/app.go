@@ -1,7 +1,7 @@
 package app
 
 import (
-	// "fmt"
+	"fmt"
 	"image"
 
 	"runtime"
@@ -23,6 +23,7 @@ type App struct {
   Name string
   Width int
   Height int
+  Window *glfw.Window
 }
 
 
@@ -33,7 +34,7 @@ func init() {
     runtime.LockOSThread()
 }
 
-func (app App) Run(widget func() ui.UIElement) {
+func (app App) Run(widget func(app App) ui.UIElement) {
     err := glfw.Init()
     if err != nil {
         panic(err)
@@ -47,6 +48,8 @@ func (app App) Run(widget func() ui.UIElement) {
     if err != nil {
         panic(err)
     }
+
+    app.Window = window
 
     window.MakeContextCurrent()
 
@@ -85,7 +88,6 @@ func (app App) Run(widget func() ui.UIElement) {
     ///
 
 
-
     for !window.ShouldClose() {
 
         var w, h = window.GetSize()
@@ -104,7 +106,7 @@ func (app App) Run(widget func() ui.UIElement) {
         // 
         // exit.Draw(img, window)
 
-        instance := widget()
+        instance := widget(app)
 
         instance.Draw(img, window)
 
@@ -128,7 +130,7 @@ func (app App) Run(widget func() ui.UIElement) {
         ///
         i++
         if glfw.GetTime()-time > 1 {
-          println("FPS:", i)
+          fmt.Printf("\rFPS: %d", i)
           i = 0
           time = glfw.GetTime()
         }
@@ -137,4 +139,9 @@ func (app App) Run(widget func() ui.UIElement) {
 
 
     }
+}
+
+
+func (app App) Quit() {
+  app.Window.SetShouldClose(true)
 }

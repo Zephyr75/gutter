@@ -2,12 +2,9 @@ package ui
 
 
 import (
-	"os"
 	"image"
-	"image/draw"
 	_ "image/png"
 
-	"github.com/go-gl/gl/v4.1-core/gl"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
 )
@@ -19,10 +16,12 @@ type Image struct {
 	Properties Properties
 	Style	   Style
 	Child      UIElement
+  Name       string
 }
 
 func (image Image) Initialize(skip SkipAlignment) UIElement {
-  image.Properties = DefaultProperties(image.Properties, skip)
+  image.Properties = DefaultProperties(image.Properties, skip, UIImage)
+  image.Style = DefaultStyle(image.Style)
   return image
 }
 
@@ -47,7 +46,7 @@ func (image Image) Draw(img *image.RGBA, window *glfw.Window) {
   //   fmt.Println(button)
   // }
 
-	Draw(img, window, image.Properties, image.Style)
+	Draw(img, window, image.Properties, image.Style, image.Name)
 	
 	if image.Child != nil {
     props := image.Child.GetProperties()
@@ -76,43 +75,4 @@ func (image Image) Debug() {
 	println(image.Properties.Center.Y)
 }
 
-func CreateTexture(file string) uint32 {
-	imgFile, err := os.Open(file)
-	if err != nil {
-		return 0
-	}
-	img, _, err := image.Decode(imgFile)
-	if err != nil {
-		return 0
-	}
 
-	rgba := image.NewRGBA(img.Bounds())
-	if rgba.Stride != rgba.Rect.Size().X*4 {
-		return 0
-	}
-	draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
-
-	var texture uint32
-	gl.GenTextures(1, &texture)
-	gl.ActiveTexture(gl.TEXTURE0)
-	gl.BindTexture(gl.TEXTURE_2D, texture)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-	gl.TexImage2D(
-		gl.TEXTURE_2D,
-		0,
-		gl.RGBA,
-		int32(rgba.Rect.Size().X),
-		int32(rgba.Rect.Size().Y),
-		0,
-		gl.RGBA,
-		gl.UNSIGNED_BYTE,
-		gl.Ptr(rgba.Pix),
-  )
-
-  // gl.GenerateMipmap(gl.TEXTURE_2D)
-
-	return texture
-}

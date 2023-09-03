@@ -15,7 +15,7 @@ type Row struct {
 }
 
 func (row Row) Initialize(skip SkipAlignment) UIElement {
-  row.Properties = DefaultProperties(row.Properties, skip)
+  row.Properties = DefaultProperties(row.Properties, skip, UIRow)
   return row
 }
 
@@ -38,7 +38,7 @@ func (row Row) Draw(img *image.RGBA, window *glfw.Window) {
     row.Children[i] = child.Initialize(SkipAlignmentHoriz)
   }
 	
-	Draw(img, window, row.Properties, row.Style)
+	Draw(img, window, row.Properties, row.Style, "")
 
   availableWidth := row.Properties.Size.Width
   maxWidth := row.Properties.Size.Width

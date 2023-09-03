@@ -19,6 +19,4 @@ ui.Row{
 ```
 
 
-
-
 </details>
