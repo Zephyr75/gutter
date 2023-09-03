@@ -224,6 +224,7 @@ func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style, f
 		if b % 255 > 30 {
 			b -= 20 
 		}
+    // TODO: update color on images too
 		if window.GetMouseButton(glfw.MouseButtonLeft) == glfw.Press {
 			if props.Function != nil {
 				props.Function()

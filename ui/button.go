@@ -13,6 +13,7 @@ type Button struct {
 	Properties Properties
 	Style	   Style
 	Child      UIElement
+  Image       string
 }
 
 func (button Button) Initialize(skip SkipAlignment) UIElement {
@@ -50,7 +51,7 @@ func (button Button) Draw(img *image.RGBA, window *glfw.Window) {
   //   fmt.Println(button)
   // }
 
-	Draw(img, window, button.Properties, button.Style, "")
+	Draw(img, window, button.Properties, button.Style, button.Image)
 	
 	if button.Child != nil {
     props := button.Child.GetProperties()
