@@ -185,6 +185,9 @@ type Style struct {
   BorderColor color.Color
   BorderWidth int
   CornerRadius int
+  ShadowWidth int
+  // ShadowColor color.Color
+  ShadowAlignment Alignment
 
 }
 
@@ -303,8 +306,43 @@ func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style, f
     texture = resize.Resize(uint(width - 2), uint(height - 2), texture, resize.Lanczos3)
   }
 
+  
+
 
   rect := image.Rect(centerX - width/2, centerY - height/2, centerX + width/2, centerY + height/2)
+
+  if style.ShadowWidth > 0 {
+    shadowWidth := style.ShadowWidth
+    shadowAlignment := style.ShadowAlignment
+    shadowColor := color.RGBA{0, 0, 0, 55}
+    shadowTexture := image.NewUniform(shadowColor)
+    shadowRect := image.Rect(centerX - width/2, centerY - height/2, centerX + width/2, centerY + height/2)
+    switch shadowAlignment {
+    case AlignmentCenter:
+      shadowRect = image.Rect(centerX - width/2 + shadowWidth, centerY - height/2 + shadowWidth, centerX + width/2 + shadowWidth, centerY + height/2 + shadowWidth)
+    case AlignmentBottom:
+      shadowRect = image.Rect(centerX - width/2 + shadowWidth, centerY - height/2 + shadowWidth, centerX + width/2 + shadowWidth, centerY + height/2 + shadowWidth)
+    case AlignmentTop:
+      shadowRect = image.Rect(centerX - width/2 + shadowWidth, centerY - height/2 - shadowWidth, centerX + width/2 + shadowWidth, centerY + height/2 - shadowWidth)
+    case AlignmentLeft:
+      shadowRect = image.Rect(centerX - width/2 - shadowWidth, centerY - height/2 + shadowWidth, centerX + width/2 - shadowWidth, centerY + height/2 + shadowWidth)
+    case AlignmentRight:
+      shadowRect = image.Rect(centerX - width/2 + shadowWidth, centerY - height/2 + shadowWidth, centerX + width/2 + shadowWidth, centerY + height/2 + shadowWidth)
+    case AlignmentTopLeft:
+      shadowRect = image.Rect(centerX - width/2 - shadowWidth, centerY - height/2 - shadowWidth, centerX + width/2 - shadowWidth, centerY + height/2 - shadowWidth)
+    case AlignmentTopRight:
+      shadowRect = image.Rect(centerX - width/2 + shadowWidth, centerY - height/2 - shadowWidth, centerX + width/2 + shadowWidth, centerY + height/2 - shadowWidth)
+    case AlignmentBottomLeft:
+      shadowRect = image.Rect(centerX - width/2 - shadowWidth, centerY - height/2 + shadowWidth, centerX + width/2 - shadowWidth, centerY + height/2 + shadowWidth)
+    case AlignmentBottomRight:
+      shadowRect = image.Rect(centerX - width/2 + shadowWidth, centerY - height/2 + shadowWidth, centerX + width/2 + shadowWidth, centerY + height/2 + shadowWidth)
+    }
+    draw.DrawMask(img, shadowRect, shadowTexture, image.Point{}, mask, image.Point{}, draw.Over)
+  }
+      
+
+
+
   if style.BorderWidth > 0 {
     if style.CornerRadius > 0 {
       draw.DrawMask(img, rect, borderTexture, image.Point{}, mask, image.Point{}, draw.Over)
@@ -334,7 +372,7 @@ func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style, f
     }
   }
 
-  
+   
   
 }
 
