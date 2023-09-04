@@ -18,7 +18,6 @@ type Container struct {
 	Style	   Style
 	Child      UIElement
   Image       string
-
 }
 
 func (container Container) Initialize(skip SkipAlignment) UIElement {
@@ -48,7 +47,7 @@ func (container Container) Draw(img *image.RGBA, window *glfw.Window) {
   //   fmt.Println(button)
   // }
 
-	Draw(img, window, container.Properties, container.Style, container.Image)
+	Draw(img, window, container.Properties, container.Style, container.Image, "")
 	
 	if container.Child != nil {
     props := container.Child.GetProperties()

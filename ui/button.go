@@ -14,10 +14,12 @@ type Button struct {
 	Style	   Style
 	Child      UIElement
   Image       string
+  HoverImage  string
 }
 
 func (button Button) Initialize(skip SkipAlignment) UIElement {
   button.Properties = DefaultProperties(button.Properties, skip, UIButton)
+  button.Style = DefaultStyle(button.Style)
   return button
 }
 
@@ -51,7 +53,7 @@ func (button Button) Draw(img *image.RGBA, window *glfw.Window) {
   //   fmt.Println(button)
   // }
 
-	Draw(img, window, button.Properties, button.Style, button.Image)
+	Draw(img, window, button.Properties, button.Style, button.Image, button.HoverImage)
 	
 	if button.Child != nil {
     props := button.Child.GetProperties()
