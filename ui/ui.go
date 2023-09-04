@@ -211,27 +211,19 @@ func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style, f
   // fmt.Println("Center: ", centerX, " ", centerY, " ", width, " ", height)
 
 	x, y := window.GetCursorPos()
+  darken := false
 
-	r, g, b, _ := style.Color.RGBA()
 
 	if x > float64(centerX - width/2) && x < float64(centerX + width/2) && y > float64(centerY - height/2) && y < float64(centerY + height/2) && props.Type == UIButton {
-		if r % 255 > 30 {
-			r -= 20
-		}
-		if g % 255 > 30 {
-			g -= 20
-		}
-		if b % 255 > 30 {
-			b -= 20 
-		}
-    // TODO: update color on images too
+    darken = true
+		
 		if window.GetMouseButton(glfw.MouseButtonLeft) == glfw.Press {
 			if props.Function != nil {
 				props.Function()
 			}
 		}
 	}
-  col := color.RGBA{byte(r), byte(g), byte(b), 255}
+  col := style.Color
 
   r2, g2, b2, _ := style.Color.RGBA()
 
@@ -302,30 +294,47 @@ func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style, f
     }
   }
 
-  var texture, borderTexture image.Image
+  var texture, borderTexture, blackTexture image.Image
   texture = image.NewUniform(col)
   borderTexture = image.NewUniform(colBorder)
+  blackTexture = image.NewUniform(color.RGBA{0, 0, 0, 55})
   if file != "" {
     texture, _ = getImageFromFilePath(file)
     texture = resize.Resize(uint(width - 2), uint(height - 2), texture, resize.Lanczos3)
   }
+
 
   rect := image.Rect(centerX - width/2, centerY - height/2, centerX + width/2, centerY + height/2)
   if style.BorderWidth > 0 {
     if style.CornerRadius > 0 {
       draw.DrawMask(img, rect, borderTexture, image.Point{}, mask, image.Point{}, draw.Over)
       draw.DrawMask(img, rect, texture, image.Point{}, offsetMask, image.Point{}, draw.Over)
+      if darken {
+        draw.DrawMask(img, rect, blackTexture, image.Point{}, mask, image.Point{}, draw.Over)
+      }
     } else {
       draw.Draw(img, rect, borderTexture, image.Point{}, draw.Src)
       draw.Draw(img, rect, texture, image.Point{}, draw.Src)
+      if darken {
+        draw.Draw(img, rect, blackTexture, image.Point{}, draw.Over)
+      }
+
     }
   } else {
     if style.CornerRadius > 0 {
       draw.DrawMask(img, rect, texture, image.Point{}, mask, image.Point{}, draw.Over)
+      if darken {
+        draw.DrawMask(img, rect, blackTexture, image.Point{}, mask, image.Point{}, draw.Over)
+      }
     } else {
       draw.Draw(img, rect, texture, image.Point{}, draw.Src)
+      if darken {
+        draw.Draw(img, rect, blackTexture, image.Point{}, draw.Over)
+      }
     }
   }
+
+  
   
 }
 
