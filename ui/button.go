@@ -6,6 +6,8 @@ import (
 	// "image/color"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
+  "github.com/nfnt/resize"
+	"github.com/Zephyr75/gutter/utils"
 )
 
 
@@ -14,12 +16,22 @@ type Button struct {
 	Style	   Style
 	Child      UIElement
   Image       string
+  ImageData  image.Image
   HoverImage  string
+  HoverImageData image.Image
 }
 
 func (button Button) Initialize(skip SkipAlignment) UIElement {
   button.Properties = DefaultProperties(button.Properties, skip, UIButton)
   button.Style = DefaultStyle(button.Style)
+
+  smallWidth := button.Properties.Size.Width - 2 * button.Style.BorderWidth
+  smallHeight := button.Properties.Size.Height - 2 * button.Style.BorderWidth
+  if button.Image != "" {
+    texture, _ := utils.GetImageFromFilePath(button.Image)
+    texture = resize.Resize(uint(smallWidth), uint(smallHeight), texture, resize.Lanczos3)
+    button.ImageData = texture
+  }
   return button
 }
 
@@ -53,7 +65,7 @@ func (button Button) Draw(img *image.RGBA, window *glfw.Window) {
   //   fmt.Println(button)
   // }
 
-	Draw(img, window, button.Properties, button.Style, button.Image, button.HoverImage)
+	Draw(img, window, button.Properties, button.Style, button.ImageData, button.HoverImageData)
 	
 	if button.Child != nil {
     props := button.Child.GetProperties()

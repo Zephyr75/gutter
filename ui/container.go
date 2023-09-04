@@ -7,7 +7,10 @@ import (
 	_ "image/png"
 
 
+	"github.com/Zephyr75/gutter/utils"
 	"github.com/go-gl/glfw/v3.3/glfw"
+
+  "github.com/nfnt/resize"
 )
 
 
@@ -18,11 +21,20 @@ type Container struct {
 	Style	   Style
 	Child      UIElement
   Image       string
+  ImageData  image.Image
 }
 
 func (container Container) Initialize(skip SkipAlignment) UIElement {
   container.Properties = DefaultProperties(container.Properties, skip, UIContainer)
   container.Style = DefaultStyle(container.Style)
+
+  smallWidth := container.Properties.Size.Width - 2 * container.Style.BorderWidth
+  smallHeight := container.Properties.Size.Height - 2 * container.Style.BorderWidth
+  if container.Image != "" {
+    texture, _ := utils.GetImageFromFilePath(container.Image)
+    texture = resize.Resize(uint(smallWidth), uint(smallHeight), texture, resize.Lanczos3)
+    container.ImageData = texture
+  }
   return container
 }
 
@@ -47,7 +59,7 @@ func (container Container) Draw(img *image.RGBA, window *glfw.Window) {
   //   fmt.Println(button)
   // }
 
-	Draw(img, window, container.Properties, container.Style, container.Image, "")
+	Draw(img, window, container.Properties, container.Style, container.ImageData, nil)
 	
 	if container.Child != nil {
     props := container.Child.GetProperties()

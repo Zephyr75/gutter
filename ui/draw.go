@@ -12,13 +12,11 @@ import (
 
 
   "image/draw"
-  "os"
-  "github.com/nfnt/resize"
 )
 
 
 
-func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style, file string, hoverFile string) {
+func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style, file, hoverFile image.Image) {
 
   // fmt.Println("Draw: ", props.Center.X, " ", props.Center.Y, " ", props.Size.Width, " ", props.Size.Height)
 
@@ -109,13 +107,11 @@ func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style, f
   hoverTexture = image.NewUniform(col)
   borderTexture = image.NewUniform(colBorder)
   blackTexture = image.NewUniform(color.RGBA{0, 0, 0, 55})
-  if file != "" {
-    texture, _ = getImageFromFilePath(file)
-    texture = resize.Resize(uint(smallWidth), uint(smallHeight), texture, resize.Lanczos3)
+  if file != nil {
+    texture = file
   }
-  if hoverFile != "" {
-    hoverTexture, _ = getImageFromFilePath(hoverFile)
-    hoverTexture = resize.Resize(uint(smallWidth), uint(smallHeight), hoverTexture, resize.Lanczos3)
+  if hoverFile != nil {
+    hoverTexture = hoverFile
   }
 
 
@@ -164,7 +160,7 @@ func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style, f
       if !darken {
         draw.DrawMask(img, offsetRect, texture, image.Point{}, offsetMask, image.Point{}, draw.Over)
       } else {
-        if hoverFile != "" {
+        if hoverFile != nil {
           draw.DrawMask(img, offsetRect, hoverTexture, image.Point{}, offsetMask, image.Point{}, draw.Over)
         } else {
           draw.DrawMask(img, offsetRect, texture, image.Point{}, offsetMask, image.Point{}, draw.Over)
@@ -177,7 +173,7 @@ func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style, f
       if !darken {
         draw.Draw(img, offsetRect, texture, image.Point{}, draw.Over)
       } else {
-        if hoverFile != "" {
+        if hoverFile != nil {
           draw.Draw(img, offsetRect, hoverTexture, image.Point{}, draw.Over)
         } else {
           draw.Draw(img, offsetRect, texture, image.Point{}, draw.Over)
@@ -190,7 +186,7 @@ func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style, f
       if !darken {
         draw.DrawMask(img, rect, texture, image.Point{}, mask, image.Point{}, draw.Over)
       } else {
-        if hoverFile != "" {
+        if hoverFile != nil {
           draw.DrawMask(img, rect, hoverTexture, image.Point{}, mask, image.Point{}, draw.Over)
         } else {
           draw.DrawMask(img, rect, texture, image.Point{}, mask, image.Point{}, draw.Over)
@@ -202,7 +198,7 @@ func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style, f
       if !darken {
         draw.Draw(img, rect, texture, image.Point{}, draw.Over)
       } else {
-        if hoverFile != "" {
+        if hoverFile != nil {
           draw.Draw(img, rect, hoverTexture, image.Point{}, draw.Over)
         } else {
           draw.Draw(img, rect, texture, image.Point{}, draw.Over)
@@ -295,17 +291,6 @@ func ApplyRelative(element UIElement) UIElement {
   newSize := Size{ScalePixel, newWidth, newHeight}
   return element.SetProperties(newSize, props.Center)
 }
-
-func getImageFromFilePath(filePath string) (image.Image, error) {
-    f, err := os.Open(filePath)
-    if err != nil {
-        return nil, err
-    }
-    defer f.Close()
-    image, _, err := image.Decode(f)
-    return image, err
-}
-
 
 /*
 Button

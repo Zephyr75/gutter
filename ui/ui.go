@@ -171,7 +171,7 @@ func DefaultProperties(props Properties, skip SkipAlignment, uitype UIType) Prop
 func DefaultStyle (style Style) Style {
   newStyle := style
   if newStyle.Color == nil {
-    newStyle.Color = color.RGBA{0, 0, 0, 255}
+    newStyle.Color = color.RGBA{0, 0, 0, 0}
   }
   if newStyle.BorderColor == nil {
     newStyle.BorderColor = color.RGBA{255, 255, 255, 255}
