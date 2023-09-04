@@ -44,53 +44,55 @@ func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style, f
 	}  
   borderWidth := style.BorderWidth
 
-
   cornerRadius := style.CornerRadius
-
-  // Create a mask with rounded corners
-  mask := image.NewRGBA(image.Rect(0, 0, width, height))
-  draw.Draw(mask, mask.Bounds(), &image.Uniform{color.White}, image.Point{}, draw.Src)
 
   smallWidth := width - 2 * borderWidth
   smallHeight := height - 2 * borderWidth
 
+  // Create a mask with rounded corners
+  mask := image.NewRGBA(image.Rect(0, 0, width, height))
   offsetMask := image.NewRGBA(image.Rect(0, 0, smallWidth, smallHeight))
-  draw.Draw(offsetMask, offsetMask.Bounds(), &image.Uniform{color.White}, image.Point{}, draw.Src)
+  if cornerRadius > 0 {
+    draw.Draw(mask, mask.Bounds(), &image.Uniform{color.White}, image.Point{}, draw.Src)
+    draw.Draw(offsetMask, offsetMask.Bounds(), &image.Uniform{color.White}, image.Point{}, draw.Src)
+  }
 
 
-  // Outside mask
-	for y := 0; y <= cornerRadius; y++ {
-		l := math.Round(float64(cornerRadius) - math.Sqrt(float64(2*y*cornerRadius-y*y)))
-    for x := 0; x <= int(l); x++ {
-      mask.Set(x-1, y-1, color.Transparent)
+  if cornerRadius > 0 {
+    // Outside mask
+    for y := 0; y <= cornerRadius; y++ {
+      l := math.Round(float64(cornerRadius) - math.Sqrt(float64(2*y*cornerRadius-y*y)))
+      for x := 0; x <= int(l); x++ {
+        mask.Set(x-1, y-1, color.Transparent)
+      }
+      for x := 0; x <= int(l); x++ {
+        mask.Set(width-x, y-1, color.Transparent)
+      }
+      for x := 0; x <= int(l); x++ {
+        mask.Set(x-1, height-y, color.Transparent)
+      }
+      for x := 0; x <= int(l); x++ {
+        mask.Set(width-x, height-y, color.Transparent)
+      }
     }
-    for x := 0; x <= int(l); x++ {
-      mask.Set(width-x, y-1, color.Transparent)
-    }
-    for x := 0; x <= int(l); x++ {
-      mask.Set(x-1, height-y, color.Transparent)
-    }
-    for x := 0; x <= int(l); x++ {
-      mask.Set(width-x, height-y, color.Transparent)
-    }
-	}
 
-  smallCornerRadius := cornerRadius - borderWidth
-  for y := 0; y <= smallCornerRadius; y++ {
-		l := math.Round(float64(smallCornerRadius) - math.Sqrt(float64(2*y*smallCornerRadius-y*y)))
-    for x := 0; x <= int(l); x++ {
-      offsetMask.Set(x-1, y-1, color.Transparent)
+    smallCornerRadius := cornerRadius - borderWidth
+    for y := 0; y <= smallCornerRadius; y++ {
+      l := math.Round(float64(smallCornerRadius) - math.Sqrt(float64(2*y*smallCornerRadius-y*y)))
+      for x := 0; x <= int(l); x++ {
+        offsetMask.Set(x-1, y-1, color.Transparent)
+      }
+      for x := 0; x <= int(l); x++ {
+        offsetMask.Set(smallWidth-x, y-1, color.Transparent)
+      }
+      for x := 0; x <= int(l); x++ {
+        offsetMask.Set(x-1, smallHeight-y, color.Transparent)
+      }
+      for x := 0; x <= int(l); x++ {
+        offsetMask.Set(smallWidth-x, smallHeight-y, color.Transparent)
+      }
     }
-    for x := 0; x <= int(l); x++ {
-      offsetMask.Set(smallWidth-x, y-1, color.Transparent)
-    }
-    for x := 0; x <= int(l); x++ {
-      offsetMask.Set(x-1, smallHeight-y, color.Transparent)
-    }
-    for x := 0; x <= int(l); x++ {
-      offsetMask.Set(smallWidth-x, smallHeight-y, color.Transparent)
-    }
-	}
+  }
 
   var col, colBorder color.Color
   col = color.RGBA{0, 0, 0, 0}
