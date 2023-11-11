@@ -173,25 +173,11 @@ func DefaultStyle (style Style) Style {
   if newStyle.Color == nil {
     newStyle.Color = color.RGBA{0, 0, 0, 255}
   }
-  if newStyle.BorderColor == nil {
-    newStyle.BorderColor = color.RGBA{255, 255, 255, 255}
-  }
-  if newStyle.ShadowColor == nil {
-    newStyle.ShadowColor = color.RGBA{0, 0, 0, 50}
-  }
-
   return newStyle
 }
 
 type Style struct {
 	Color color.Color
-  BorderColor color.Color
-  BorderWidth int
-  CornerRadius int
-  ShadowWidth int
-  ShadowColor color.Color
-  ShadowAlignment Alignment
-
 }
 
 type StyleText struct {

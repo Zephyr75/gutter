@@ -6,7 +6,6 @@ import (
 	"image/color"
 	// "sync"
 
-  "math"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
 
@@ -42,176 +41,40 @@ func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style, f
 			}
 		}
 	}  
-  borderWidth := style.BorderWidth
-
-  cornerRadius := style.CornerRadius
-
-  smallWidth := width - 2 * borderWidth
-  smallHeight := height - 2 * borderWidth
-
-  // Create a mask with rounded corners
-  mask := image.NewRGBA(image.Rect(0, 0, width, height))
-  offsetMask := image.NewRGBA(image.Rect(0, 0, smallWidth, smallHeight))
-  if cornerRadius > 0 {
-    draw.Draw(mask, mask.Bounds(), &image.Uniform{color.White}, image.Point{}, draw.Src)
-    draw.Draw(offsetMask, offsetMask.Bounds(), &image.Uniform{color.White}, image.Point{}, draw.Src)
-  }
 
 
-  if cornerRadius > 0 {
-    // Outside mask
-    for y := 0; y <= cornerRadius; y++ {
-      l := math.Round(float64(cornerRadius) - math.Sqrt(float64(2*y*cornerRadius-y*y)))
-      for x := 0; x <= int(l); x++ {
-        mask.Set(x-1, y-1, color.Transparent)
-      }
-      for x := 0; x <= int(l); x++ {
-        mask.Set(width-x, y-1, color.Transparent)
-      }
-      for x := 0; x <= int(l); x++ {
-        mask.Set(x-1, height-y, color.Transparent)
-      }
-      for x := 0; x <= int(l); x++ {
-        mask.Set(width-x, height-y, color.Transparent)
-      }
-    }
 
-    smallCornerRadius := cornerRadius - borderWidth
-    for y := 0; y <= smallCornerRadius; y++ {
-      l := math.Round(float64(smallCornerRadius) - math.Sqrt(float64(2*y*smallCornerRadius-y*y)))
-      for x := 0; x <= int(l); x++ {
-        offsetMask.Set(x-1, y-1, color.Transparent)
-      }
-      for x := 0; x <= int(l); x++ {
-        offsetMask.Set(smallWidth-x, y-1, color.Transparent)
-      }
-      for x := 0; x <= int(l); x++ {
-        offsetMask.Set(x-1, smallHeight-y, color.Transparent)
-      }
-      for x := 0; x <= int(l); x++ {
-        offsetMask.Set(smallWidth-x, smallHeight-y, color.Transparent)
-      }
-    }
-  }
-
-  var col, colBorder color.Color
+  var col color.Color
   col = color.RGBA{0, 0, 0, 0}
-  colBorder = color.RGBA{0, 0, 0, 0}
   if style.Color != nil {
     col = style.Color
   }
-  if style.BorderColor != nil {
-    colBorder = style.BorderColor
-  }
 
-  var texture, hoverTexture, borderTexture, blackTexture image.Image
+  var texture, hoverTexture, blackTexture image.Image
   texture = image.NewUniform(col)
   hoverTexture = image.NewUniform(col)
-  borderTexture = image.NewUniform(colBorder)
   blackTexture = image.NewUniform(color.RGBA{0, 0, 0, 55})
   if file != "" {
     texture, _ = getImageFromFilePath(file)
-    texture = resize.Resize(uint(smallWidth), uint(smallHeight), texture, resize.Lanczos3)
+    texture = resize.Resize(uint(width), uint(height), texture, resize.Lanczos3)
   }
   if hoverFile != "" {
     hoverTexture, _ = getImageFromFilePath(hoverFile)
-    hoverTexture = resize.Resize(uint(smallWidth), uint(smallHeight), hoverTexture, resize.Lanczos3)
+    hoverTexture = resize.Resize(uint(width), uint(height), hoverTexture, resize.Lanczos3)
   }
-
-
-
-
-  if style.ShadowWidth > 0 {
-    shadowWidth := style.ShadowWidth
-    shadowAlignment := style.ShadowAlignment
-    shadowColor := style.ShadowColor
-    if style.ShadowColor != nil {
-      shadowColor = style.ShadowColor
-    }
-    shadowTexture := image.NewUniform(shadowColor)
-    shadowRect := image.Rect(centerX - width/2, centerY - height/2, centerX + width/2, centerY + height/2)
-    switch shadowAlignment {
-    case AlignmentCenter:
-      shadowRect = image.Rect(centerX - width/2, centerY - height/2, centerX + width/2, centerY + height/2)
-    case AlignmentBottom:
-      shadowRect = image.Rect(centerX - width/2, centerY - height/2 + shadowWidth, centerX + width/2, centerY + height/2 + shadowWidth)
-    case AlignmentTop:
-      shadowRect = image.Rect(centerX - width/2, centerY - height/2 - shadowWidth, centerX + width/2, centerY + height/2 - shadowWidth)
-    case AlignmentLeft:
-      shadowRect = image.Rect(centerX - width/2 - shadowWidth, centerY - height/2, centerX + width/2 - shadowWidth, centerY + height/2)
-    case AlignmentRight:
-      shadowRect = image.Rect(centerX - width/2 + shadowWidth, centerY - height/2, centerX + width/2 + shadowWidth, centerY + height/2)
-    case AlignmentTopLeft:
-      shadowRect = image.Rect(centerX - width/2 - shadowWidth, centerY - height/2 - shadowWidth, centerX + width/2 - shadowWidth, centerY + height/2 - shadowWidth)
-    case AlignmentTopRight:
-      shadowRect = image.Rect(centerX - width/2 + shadowWidth, centerY - height/2 - shadowWidth, centerX + width/2 + shadowWidth, centerY + height/2 - shadowWidth)
-    case AlignmentBottomLeft:
-      shadowRect = image.Rect(centerX - width/2 - shadowWidth, centerY - height/2 + shadowWidth, centerX + width/2 - shadowWidth, centerY + height/2 + shadowWidth)
-    case AlignmentBottomRight:
-      shadowRect = image.Rect(centerX - width/2 + shadowWidth, centerY - height/2 + shadowWidth, centerX + width/2 + shadowWidth, centerY + height/2 + shadowWidth)
-    }
-    draw.DrawMask(img, shadowRect, shadowTexture, image.Point{}, mask, image.Point{}, draw.Over)
-  }
-      
 
   rect := image.Rect(centerX - width/2, centerY - height/2, centerX + width/2, centerY + height/2)
-  offsetRect := image.Rect(centerX - width/2 + borderWidth, centerY - height/2 + borderWidth, centerX + width/2 - borderWidth, centerY + height/2 - borderWidth)
 
-  if style.BorderWidth > 0 {
-    if style.CornerRadius > 0 {
-      draw.DrawMask(img, rect, borderTexture, image.Point{}, mask, image.Point{}, draw.Over)
-      
-      if !darken {
-        draw.DrawMask(img, offsetRect, texture, image.Point{}, offsetMask, image.Point{}, draw.Over)
-      } else {
-        if hoverFile != "" {
-          draw.DrawMask(img, offsetRect, hoverTexture, image.Point{}, offsetMask, image.Point{}, draw.Over)
-        } else {
-          draw.DrawMask(img, offsetRect, texture, image.Point{}, offsetMask, image.Point{}, draw.Over)
-          draw.DrawMask(img, offsetRect, blackTexture, image.Point{}, offsetMask, image.Point{}, draw.Over)
-        }
-      }
-    } else {
-      draw.Draw(img, rect, borderTexture, image.Point{}, draw.Src)
-
-      if !darken {
-        draw.Draw(img, offsetRect, texture, image.Point{}, draw.Over)
-      } else {
-        if hoverFile != "" {
-          draw.Draw(img, offsetRect, hoverTexture, image.Point{}, draw.Over)
-        } else {
-          draw.Draw(img, offsetRect, texture, image.Point{}, draw.Over)
-          draw.Draw(img, offsetRect, blackTexture, image.Point{}, draw.Over)
-        }
-      }
-    }
+  if !darken {
+    draw.Draw(img, rect, texture, image.Point{}, draw.Over)
   } else {
-    if style.CornerRadius > 0 {
-      if !darken {
-        draw.DrawMask(img, rect, texture, image.Point{}, mask, image.Point{}, draw.Over)
-      } else {
-        if hoverFile != "" {
-          draw.DrawMask(img, rect, hoverTexture, image.Point{}, mask, image.Point{}, draw.Over)
-        } else {
-          draw.DrawMask(img, rect, texture, image.Point{}, mask, image.Point{}, draw.Over)
-          draw.DrawMask(img, rect, blackTexture, image.Point{}, mask, image.Point{}, draw.Over)
-        }
-      }
-      
+    if hoverFile != "" {
+      draw.Draw(img, rect, hoverTexture, image.Point{}, draw.Over)
     } else {
-      if !darken {
-        draw.Draw(img, rect, texture, image.Point{}, draw.Over)
-      } else {
-        if hoverFile != "" {
-          draw.Draw(img, rect, hoverTexture, image.Point{}, draw.Over)
-        } else {
-          draw.Draw(img, rect, texture, image.Point{}, draw.Over)
-          draw.Draw(img, rect, blackTexture, image.Point{}, draw.Over)
-        }
-      }
+      draw.Draw(img, rect, texture, image.Point{}, draw.Over)
+      draw.Draw(img, rect, blackTexture, image.Point{}, draw.Over)
     }
   }
-
    
   
 }
