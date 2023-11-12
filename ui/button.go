@@ -12,6 +12,7 @@ type Button struct {
 	Properties Properties
 	Style      Style
 	Child      UIElement
+	Function    func()
 	Image      string
 	HoverImage string
 }
@@ -74,10 +75,6 @@ func (button Button) SetParent(parent *Properties) UIElement {
 
 func (button Button) GetProperties() Properties {
 	return button.Properties
-}
-
-func (button Button) Debug() {
-	println(button.Properties.Center.Y)
 }
 
 func (button Button) ToString() string {

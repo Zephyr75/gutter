@@ -72,10 +72,6 @@ func (container Container) GetProperties() Properties {
   return container.Properties
 }
 
-func (container Container) Debug() {
-	println(container.Properties.Center.Y)
-}
-
 func (container Container) ToString() string {
   result := container.Properties.ToString() +
     container.Style.ToString() +

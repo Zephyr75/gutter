@@ -80,9 +80,9 @@ const (
 type SkipAlignment byte
 
 const (
-  SkipAlignmentNone SkipAlignment = 0
+  SkipAlignmentNone  SkipAlignment = 0
   SkipAlignmentHoriz SkipAlignment = 1
-  SkipAlignmentVert SkipAlignment = 2
+  SkipAlignmentVert  SkipAlignment = 2
 )
 
 /*
@@ -102,7 +102,6 @@ type UIElement interface {
 	Draw(img *image.RGBA, window *glfw.Window)
 	SetProperties(size Size, center Point) UIElement
   GetProperties() Properties
-	Debug()
   Initialize(skip SkipAlignment) UIElement
   SetParent(parent *Properties) UIElement
   ToString() string
@@ -112,11 +111,11 @@ type UIType byte
 
 const (
   UIContainer UIType = 0
-  UIButton UIType = 1
-  UIImage UIType = 2
-  UIRow UIType = 3
-  UIColumn UIType = 4
-  UIText UIType = 5
+  UIButton    UIType = 1
+  UIImage     UIType = 2
+  UIRow       UIType = 3
+  UIColumn    UIType = 4
+  UIText      UIType = 5
 )
 
 func (u UIType) ToString() string {

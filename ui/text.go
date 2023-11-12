@@ -60,11 +60,6 @@ func (text Text) GetProperties() Properties {
   return text.Properties
 }
 
-func (text Text) Debug() {
-	println(text.Properties.Center.Y)
-}
-
-
 func drawText(img *image.RGBA, text []string, font string, fontSize float64, fontColor color.Color, x, y int) {
 
 	// Load font

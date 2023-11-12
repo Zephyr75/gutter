@@ -127,10 +127,6 @@ func (column Column) GetProperties() Properties {
 	return column.Properties
 }
 
-func (column Column) Debug() {
-	println(column.Properties.Center.Y)
-}
-
 func (column Column) ToString() string {
   result := column.Properties.ToString() + column.Style.ToString()
   for _, child := range column.Children {

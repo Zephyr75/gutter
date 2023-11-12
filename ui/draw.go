@@ -14,6 +14,14 @@ import (
 	"github.com/Zephyr75/gutter/utils"
 )
 
+func MouseInBounds(window *glfw.Window, props Properties) bool {
+  x, y := window.GetCursorPos()
+  if x > float64(props.Center.X-props.Size.Width/2) && x < float64(props.Center.X+props.Size.Width/2) && y > float64(props.Center.Y-props.Size.Height/2) && y < float64(props.Center.Y+props.Size.Height/2) {
+    return true
+  }
+  return false
+}
+
 func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style, file string, hoverFile string) {
 
 	// fmt.Println("Draw: ", props.Center.X, " ", props.Center.Y, " ", props.Size.Width, " ", props.Size.Height)
@@ -25,10 +33,9 @@ func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style, f
 
 	// fmt.Println("Center: ", centerX, " ", centerY, " ", width, " ", height)
 
-	x, y := window.GetCursorPos()
 	darken := false
 
-	if x > float64(centerX-width/2) && x < float64(centerX+width/2) && y > float64(centerY-height/2) && y < float64(centerY+height/2) && props.Type == UIButton {
+	if MouseInBounds(window, props) && props.Type == UIButton {
 		darken = true
 
 		if window.GetMouseButton(glfw.MouseButtonLeft) == glfw.Press {
