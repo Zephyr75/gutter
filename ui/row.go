@@ -132,3 +132,12 @@ func (row Row) GetProperties() Properties {
 func (row Row) Debug() {
 	println(row.Properties.Center.Y)
 }
+
+func (row Row) ToString() string {
+  result := row.Properties.ToString() + row.Style.ToString()
+  for _, child := range row.Children {
+    result += child.ToString()
+  }
+  return result
+}
+

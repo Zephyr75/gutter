@@ -76,4 +76,12 @@ func (container Container) Debug() {
 	println(container.Properties.Center.Y)
 }
 
-
+func (container Container) ToString() string {
+  result := container.Properties.ToString() +
+    container.Style.ToString() +
+    container.Image
+  if container.Child != nil {
+    result += container.Child.ToString()
+  }
+  return result
+}

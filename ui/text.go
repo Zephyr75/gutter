@@ -99,3 +99,9 @@ func drawText(img *image.RGBA, text []string, font string, fontSize float64, fon
 		pt.Y += c.PointToFixed(fontSize * 1.5)
 	}
 }
+
+func (text Text) ToString() string {
+  return text.Properties.ToString() +
+    text.StyleText.ToString()
+}
+

@@ -87,6 +87,8 @@ func (app App) Run(widget func(app App) ui.UIElement) {
     time := glfw.GetTime()
     ///
 
+    lastInstance := ui.Container{}.Initialize(ui.SkipAlignmentNone).(ui.UIElement)
+    var flippedImg *image.NRGBA
 
     for !window.ShouldClose() {
 
@@ -107,15 +109,20 @@ func (app App) Run(widget func(app App) ui.UIElement) {
         // exit.Draw(img, window)
 
         instance := widget(app)
-
+        
         instance.Draw(img, window)
-
-
-        flippedImg := imaging.FlipV(img)
-
-
+    
+        if lastInstance.ToString() != instance.ToString() {
+          flippedImg = imaging.FlipV(img)
+          // fmt.Println(lastInstance.ToString())
+          // fmt.Println(instance.ToString())
+          // fmt.Println("----")
+        } else {
+          // fmt.Println("same")
+        }
+        lastInstance = instance
+          
         // window.SetShouldClose(true)
-
         // -------------------------
 
         gl.BindTexture(gl.TEXTURE_2D, texture)

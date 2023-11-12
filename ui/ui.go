@@ -10,6 +10,7 @@ import (
 	"github.com/go-gl/glfw/v3.3/glfw"
 
 	"github.com/Zephyr75/gutter/utils"
+  "strconv"
 
 )
 
@@ -93,6 +94,10 @@ type Size struct {
 	Height int
 }
 
+func (s Size) ToString() string {
+  return strconv.Itoa(s.Width) + strconv.Itoa(s.Height) + strconv.FormatBool(bool(s.Scale))
+}
+
 type UIElement interface {
 	Draw(img *image.RGBA, window *glfw.Window)
 	SetProperties(size Size, center Point) UIElement
@@ -100,6 +105,7 @@ type UIElement interface {
 	Debug()
   Initialize(skip SkipAlignment) UIElement
   SetParent(parent *Properties) UIElement
+  ToString() string
 }
 
 type UIType byte
@@ -113,17 +119,41 @@ const (
   UIText UIType = 5
 )
 
-type Properties struct {
-	Center    Point
-	Size      Size
-	Alignment Alignment
-	Padding   Padding
-	Function  func()
-  Parent    *Properties
-  Initialized bool
-  Skip       SkipAlignment
-  Type       UIType
+func (u UIType) ToString() string {
+  switch u {
+  case UIContainer:
+    return "UIContainer"
+  case UIButton:
+    return "UIButton"
+  case UIImage:
+    return "UIImage"
+  case UIRow:
+    return "UIRow"
+  case UIColumn:
+    return "UIColumn"
+  case UIText:
+    return "UIText"
+  default:
+    return "Unknown"
+  }
 }
+
+type Properties struct {
+	Center      Point
+	Size        Size
+	Alignment   Alignment
+	Padding     Padding
+	Function    func()
+  Parent      *Properties
+  Initialized bool
+  Skip        SkipAlignment
+  Type        UIType
+}
+
+func (p Properties) ToString() string {
+  return p.Center.ToString() + p.Size.ToString() + p.Type.ToString()
+}
+
 
 func DefaultProperties(props Properties, skip SkipAlignment, uitype UIType) Properties {
   newSize := props.Size
@@ -177,7 +207,12 @@ func DefaultStyle (style Style) Style {
 }
 
 type Style struct {
-	Color color.Color
+	Color      color.Color
+}
+
+func (s Style) ToString() string {
+  r, g, b, a := s.Color.RGBA()
+  return strconv.Itoa(int(r)) + strconv.Itoa(int(g)) + strconv.Itoa(int(b)) + strconv.Itoa(int(a))
 }
 
 type StyleText struct {
@@ -186,7 +221,16 @@ type StyleText struct {
 	FontColor color.Color
 }
 
+func (s StyleText) ToString() string {
+  r, g, b, a := s.FontColor.RGBA()
+  return s.Font + strconv.Itoa(s.FontSize) + strconv.Itoa(int(r)) + strconv.Itoa(int(g)) + strconv.Itoa(int(b)) + strconv.Itoa(int(a))
+}
+
 type Point struct {
 	X int
 	Y int
+}
+
+func (p Point) ToString() string {
+  return strconv.Itoa(p.X) + strconv.Itoa(p.Y)
 }
