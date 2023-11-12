@@ -142,7 +142,6 @@ type Properties struct {
 	Size        Size
 	Alignment   Alignment
 	Padding     Padding
-	Function    func()
   Parent      *Properties
   Initialized bool
   Skip        SkipAlignment
@@ -176,7 +175,6 @@ func DefaultProperties(props Properties, skip SkipAlignment, uitype UIType) Prop
       Size: Size{ScalePixel, utils.RESOLUTION_X, utils.RESOLUTION_Y},
       Alignment: AlignmentCenter,
       Padding: PaddingEqual(ScalePixel, 0),
-      Function: nil,
       Parent: nil,
       Initialized: true,
       Skip: skip,
@@ -189,7 +187,6 @@ func DefaultProperties(props Properties, skip SkipAlignment, uitype UIType) Prop
     Size: newSize,
     Alignment: props.Alignment,
     Padding: props.Padding,
-    Function: props.Function,
     Parent: newParent,
     Initialized: true,
     Skip: skip,

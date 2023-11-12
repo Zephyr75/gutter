@@ -22,28 +22,43 @@ func MouseInBounds(window *glfw.Window, props Properties) bool {
   return false
 }
 
-func Draw(img *image.RGBA, window *glfw.Window, props Properties, style Style, file string, hoverFile string) {
+func Draw(img *image.RGBA, window *glfw.Window, element UIElement) {
 
-	// fmt.Println("Draw: ", props.Center.X, " ", props.Center.Y, " ", props.Size.Width, " ", props.Size.Height)
+  props := element.GetProperties()
+  style := Style{}
+  file := ""
+  hoverFile := ""
 
 	width := props.Size.Width
 	height := props.Size.Height
 	centerX := props.Center.X
 	centerY := props.Center.Y
 
-	// fmt.Println("Center: ", centerX, " ", centerY, " ", width, " ", height)
-
+  // Check if the mouse is in bounds
 	darken := false
-
 	if MouseInBounds(window, props) && props.Type == UIButton {
 		darken = true
-
+    // Call the function on click
 		if window.GetMouseButton(glfw.MouseButtonLeft) == glfw.Press {
-			if props.Function != nil {
-				props.Function()
+			if element.(*Button).Function != nil {
+				element.(*Button).Function()
 			}
 		}
 	}
+
+  // Get the style
+  switch {
+  case props.Type == UIButton:
+    style = element.(Button).Style
+    file = element.(Button).Image
+    hoverFile = element.(Button).HoverImage
+  case props.Type == UIRow:
+    style = element.(Row).Style
+  case props.Type == UIColumn:
+    style = element.(Column).Style
+  case props.Type == UIContainer:
+    style = element.(Container).Style
+  }
 
 	var col color.Color
 	col = color.RGBA{0, 0, 0, 0}

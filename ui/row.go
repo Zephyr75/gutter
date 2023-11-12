@@ -39,7 +39,7 @@ func (row Row) Draw(img *image.RGBA, window *glfw.Window) {
     row.Children[i] = child.Initialize(SkipAlignmentHoriz)
   }
 	
-	Draw(img, window, row.Properties, row.Style, "", "")
+	Draw(img, window, row)
 
   availableWidth := row.Properties.Size.Width
   maxWidth := row.Properties.Size.Width

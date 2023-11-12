@@ -53,7 +53,7 @@ func (button Button) Draw(img *image.RGBA, window *glfw.Window) {
 	//   fmt.Println(button)
 	// }
 
-	Draw(img, window, button.Properties, button.Style, button.Image, button.HoverImage)
+	Draw(img, window, button)
 
 	if button.Child != nil {
 		props := button.Child.GetProperties()

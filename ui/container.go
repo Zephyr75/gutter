@@ -47,7 +47,7 @@ func (container Container) Draw(img *image.RGBA, window *glfw.Window) {
   //   fmt.Println(button)
   // }
 
-	Draw(img, window, container.Properties, container.Style, container.Image, "")
+	Draw(img, window, container)
 	
 	if container.Child != nil {
     props := container.Child.GetProperties()
