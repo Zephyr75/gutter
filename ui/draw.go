@@ -15,30 +15,30 @@ import (
 )
 
 func MouseInBounds(window *glfw.Window, props Properties) bool {
-  x, y := window.GetCursorPos()
-  if x > float64(props.Center.X-props.Size.Width/2) && x < float64(props.Center.X+props.Size.Width/2) && y > float64(props.Center.Y-props.Size.Height/2) && y < float64(props.Center.Y+props.Size.Height/2) {
-    return true
-  }
-  return false
+	x, y := window.GetCursorPos()
+	if x > float64(props.Center.X-props.Size.Width/2) && x < float64(props.Center.X+props.Size.Width/2) && y > float64(props.Center.Y-props.Size.Height/2) && y < float64(props.Center.Y+props.Size.Height/2) {
+		return true
+	}
+	return false
 }
 
 func Draw(img *image.RGBA, window *glfw.Window, element UIElement) {
 
-  props := element.GetProperties()
-  style := Style{}
-  file := ""
-  hoverFile := ""
+	props := element.GetProperties()
+	style := Style{}
+	file := ""
+	hoverFile := ""
 
 	width := props.Size.Width
 	height := props.Size.Height
 	centerX := props.Center.X
 	centerY := props.Center.Y
 
-  // Check if the mouse is in bounds
+	// Check if the mouse is in bounds
 	darken := false
 	if MouseInBounds(window, props) && props.Type == UIButton {
 		darken = true
-    // Call the function on click
+		// Call the function on click
 		if window.GetMouseButton(glfw.MouseButtonLeft) == glfw.Press {
 			if element.(*Button).Function != nil {
 				element.(*Button).Function()
@@ -46,19 +46,19 @@ func Draw(img *image.RGBA, window *glfw.Window, element UIElement) {
 		}
 	}
 
-  // Get the style
-  switch {
-  case props.Type == UIButton:
-    style = element.(Button).Style
-    file = element.(Button).Image
-    hoverFile = element.(Button).HoverImage
-  case props.Type == UIRow:
-    style = element.(Row).Style
-  case props.Type == UIColumn:
-    style = element.(Column).Style
-  case props.Type == UIContainer:
-    style = element.(Container).Style
-  }
+	// Get the style
+	switch {
+	case props.Type == UIButton:
+		style = element.(Button).Style
+		file = element.(Button).Image
+		hoverFile = element.(Button).HoverImage
+	case props.Type == UIRow:
+		style = element.(Row).Style
+	case props.Type == UIColumn:
+		style = element.(Column).Style
+	case props.Type == UIContainer:
+		style = element.(Container).Style
+	}
 
 	var col color.Color
 	col = color.RGBA{0, 0, 0, 0}

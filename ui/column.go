@@ -128,9 +128,9 @@ func (column Column) GetProperties() Properties {
 }
 
 func (column Column) ToString() string {
-  result := column.Properties.ToString() + column.Style.ToString()
-  for _, child := range column.Children {
-    result += child.ToString()
-  }
-  return result
+	result := column.Properties.ToString() + column.Style.ToString()
+	for _, child := range column.Children {
+		result += child.ToString()
+	}
+	return result
 }

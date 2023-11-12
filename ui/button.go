@@ -12,7 +12,7 @@ type Button struct {
 	Properties Properties
 	Style      Style
 	Child      UIElement
-	Function    func()
+	Function   func()
 	Image      string
 	HoverImage string
 }
@@ -78,16 +78,15 @@ func (button Button) GetProperties() Properties {
 }
 
 func (button Button) ToString() string {
-  result := button.Properties.ToString() +
+	result := button.Properties.ToString() +
 		button.Style.ToString() +
 		button.Image +
 		button.HoverImage
-  if button.Child != nil {
-    result += button.Child.ToString()
-  }
-  return result
+	if button.Child != nil {
+		result += button.Child.ToString()
+	}
+	return result
 }
-
 
 // TODO: split between draw and setup
 // TODO: create a method to check if mouse is over button
