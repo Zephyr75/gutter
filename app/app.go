@@ -87,10 +87,8 @@ func (app App) Run(widget func(app App) ui.UIElement) {
     time := glfw.GetTime()
     ///
 
-    lastInstance := ui.Container{}.Initialize(ui.SkipAlignmentNone).(ui.UIElement)
+    lastInstance := ""
     var flippedImg *image.NRGBA
-
-    first := true
 
     lastMap := map[string]bool{}
     areas := []ui.Area{}
@@ -110,7 +108,6 @@ func (app App) Run(widget func(app App) ui.UIElement) {
 
         instance := widget(app)
         
-        lastInstance = instance
 
 
         equal := true
@@ -123,7 +120,8 @@ func (app App) Run(widget func(app App) ui.UIElement) {
           }
         }
     
-        if lastInstance.ToString() != instance.ToString() || !equal || first {
+        if lastInstance != instance.ToString() || !equal {
+          lastInstance = instance.ToString()
           areas = instance.Draw(img, window)
           // Remove all empty areas
           newAreas := []ui.Area{}
@@ -134,7 +132,6 @@ func (app App) Run(widget func(app App) ui.UIElement) {
           }
           areas = newAreas
           flippedImg = imaging.FlipV(img)
-          first = false
         }
         for _, area := range areas {
           lastMap[area.ToString()] = ui.MouseInBounds(window, area)
