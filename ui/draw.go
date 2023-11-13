@@ -14,15 +14,15 @@ import (
 	"github.com/Zephyr75/gutter/utils"
 )
 
-func MouseInBounds(window *glfw.Window, props Properties) bool {
+func MouseInBounds(window *glfw.Window, area Area) bool {
 	x, y := window.GetCursorPos()
-	if x > float64(props.Center.X-props.Size.Width/2) && x < float64(props.Center.X+props.Size.Width/2) && y > float64(props.Center.Y-props.Size.Height/2) && y < float64(props.Center.Y+props.Size.Height/2) {
+	if x > area.Left && x < area.Right && y > area.Top && y < area.Bottom {
 		return true
 	}
 	return false
 }
 
-func Draw(img *image.RGBA, window *glfw.Window, element UIElement) {
+func Draw(img *image.RGBA, window *glfw.Window, element UIElement) Area {
 
 	props := element.GetProperties()
 	style := Style{}
@@ -36,13 +36,21 @@ func Draw(img *image.RGBA, window *glfw.Window, element UIElement) {
 
 	// Check if the mouse is in bounds
 	darken := false
-	if MouseInBounds(window, props) && props.Type == UIButton {
-		darken = true
-		// Call the function on click
-		if window.GetMouseButton(glfw.MouseButtonLeft) == glfw.Press {
-			if element.(Button).Function != nil {
-				element.(Button).Function()
-			}
+	area := Area{}
+	if props.Type == UIButton {
+		area = Area{
+			Left: float64(centerX - width/2), 
+			Right: float64(centerX + width/2), 
+			Top: float64(centerY - height/2), 
+			Bottom: float64(centerY + height/2),
+			Function: element.(Button).Function,
+		}
+		if MouseInBounds(window, area) {
+			darken = true
+			// Call the function on click
+			// if window.GetMouseButton(glfw.MouseButtonLeft) == glfw.Press {
+			// 	element.(Button).Function()
+			// }
 		}
 	}
 
@@ -91,6 +99,8 @@ func Draw(img *image.RGBA, window *glfw.Window, element UIElement) {
 			draw.Draw(img, rect, blackTexture, image.Point{}, draw.Over)
 		}
 	}
+
+	return area
 
 }
 

@@ -18,8 +18,10 @@ func (column Column) Initialize(skip SkipAlignment) UIElement {
 	return column
 }
 
-func (column Column) Draw(img *image.RGBA, window *glfw.Window) {
+func (column Column) Draw(img *image.RGBA, window *glfw.Window) []Area {
 	// fmt.Println("--------------------")
+
+	areas := []Area{}
 
 	if !column.Properties.Initialized {
 		column = column.Initialize(SkipAlignmentNone).(Column)
@@ -39,7 +41,7 @@ func (column Column) Draw(img *image.RGBA, window *glfw.Window) {
 	// fmt.Println("Column")
 	// fmt.Println(column.Properties)
 
-	Draw(img, window, column)
+	areas = append(areas, Draw(img, window, column))
 
 	availableHeight := column.Properties.Size.Height
 	maxHeight := column.Properties.Size.Height
@@ -107,9 +109,10 @@ func (column Column) Draw(img *image.RGBA, window *glfw.Window) {
 	for _, child := range column.Children {
 		// fmt.Println("child")
 		// fmt.Println(child)
-		child.Draw(img, window)
+		areas = append(areas, child.Draw(img, window)...)
 	}
 
+	return areas
 }
 
 func (column Column) SetProperties(size Size, center Point) UIElement {

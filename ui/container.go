@@ -20,7 +20,9 @@ func (container Container) Initialize(skip SkipAlignment) UIElement {
 	return container
 }
 
-func (container Container) Draw(img *image.RGBA, window *glfw.Window) {
+func (container Container) Draw(img *image.RGBA, window *glfw.Window) []Area {
+
+	areas := []Area{}
 
 	if !container.Properties.Initialized {
 		container = container.Initialize(SkipAlignmentNone).(Container)
@@ -41,13 +43,15 @@ func (container Container) Draw(img *image.RGBA, window *glfw.Window) {
 	//   fmt.Println(button)
 	// }
 
-	Draw(img, window, container)
+	areas = append(areas, Draw(img, window, container))
 
 	if container.Child != nil {
 		props := container.Child.GetProperties()
 		container.Child.SetProperties(props.Size, container.Properties.Center)
-		container.Child.Draw(img, window)
+		areas = append(areas, container.Child.Draw(img, window)...)
 	}
+
+	return areas
 }
 
 func (container Container) SetProperties(size Size, center Point) UIElement {

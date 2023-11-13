@@ -18,8 +18,10 @@ func (row Row) Initialize(skip SkipAlignment) UIElement {
 	return row
 }
 
-func (row Row) Draw(img *image.RGBA, window *glfw.Window) {
+func (row Row) Draw(img *image.RGBA, window *glfw.Window) []Area {
 	// fmt.Println("--------------------")
+
+	areas := []Area{}
 
 	if !row.Properties.Initialized {
 		row = row.Initialize(SkipAlignmentNone).(Row)
@@ -36,7 +38,7 @@ func (row Row) Draw(img *image.RGBA, window *glfw.Window) {
 		row.Children[i] = child.Initialize(SkipAlignmentHoriz)
 	}
 
-	Draw(img, window, row)
+	areas = append(areas, Draw(img, window, row))
 
 	availableWidth := row.Properties.Size.Width
 	maxWidth := row.Properties.Size.Width
@@ -103,8 +105,10 @@ func (row Row) Draw(img *image.RGBA, window *glfw.Window) {
 
 	for _, child := range row.Children {
 		// fmt.Println(child)
-		child.Draw(img, window)
+		areas = append(areas, child.Draw(img, window)...)
 	}
+
+	return areas
 
 }
 

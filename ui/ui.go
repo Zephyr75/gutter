@@ -97,7 +97,7 @@ func (s Size) ToString() string {
 }
 
 type UIElement interface {
-	Draw(img *image.RGBA, window *glfw.Window)
+	Draw(img *image.RGBA, window *glfw.Window) []Area
 	SetProperties(size Size, center Point) UIElement
 	GetProperties() Properties
 	Initialize(skip SkipAlignment) UIElement
@@ -175,6 +175,7 @@ func DefaultProperties(props Properties, skip SkipAlignment, uitype UIType) Prop
 			Parent:      nil,
 			Initialized: true,
 			Skip:        skip,
+			Type:        UIContainer,
 		}
 	}
 
@@ -225,4 +226,16 @@ type Point struct {
 
 func (p Point) ToString() string {
 	return strconv.Itoa(p.X) + strconv.Itoa(p.Y)
+}
+
+type Area struct {
+	Top    float64
+	Right  float64
+	Bottom float64
+	Left   float64
+	Function   func()
+}
+
+func (a Area) ToString() string {
+	return strconv.Itoa(int(a.Top)) + strconv.Itoa(int(a.Right)) + strconv.Itoa(int(a.Bottom)) + strconv.Itoa(int(a.Left))
 }

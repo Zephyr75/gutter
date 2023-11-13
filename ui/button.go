@@ -23,7 +23,9 @@ func (button Button) Initialize(skip SkipAlignment) UIElement {
 	return button
 }
 
-func (button Button) Draw(img *image.RGBA, window *glfw.Window) {
+func (button Button) Draw(img *image.RGBA, window *glfw.Window) []Area {
+
+	areas := []Area{}
 
 	// get color
 	// _, _, b, _ := button.Style.Color.RGBA()
@@ -53,13 +55,15 @@ func (button Button) Draw(img *image.RGBA, window *glfw.Window) {
 	//   fmt.Println(button)
 	// }
 
-	Draw(img, window, button)
+	areas = append(areas, Draw(img, window, button))
 
 	if button.Child != nil {
 		props := button.Child.GetProperties()
 		button.Child.SetProperties(props.Size, button.Properties.Center)
-		button.Child.Draw(img, window)
+		areas = append(areas, button.Child.Draw(img, window)...)
 	}
+
+	return areas
 }
 
 func (button Button) SetProperties(size Size, center Point) UIElement {

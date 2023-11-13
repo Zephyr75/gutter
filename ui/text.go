@@ -22,7 +22,7 @@ func (text Text) Initialize(skip SkipAlignment) UIElement {
 	return text
 }
 
-func (text Text) Draw(img *image.RGBA, window *glfw.Window) {
+func (text Text) Draw(img *image.RGBA, window *glfw.Window) []Area {
 	//Draw(img, window, text.Properties, Style{})
 
 	if !text.Properties.Initialized {
@@ -36,6 +36,8 @@ func (text Text) Draw(img *image.RGBA, window *glfw.Window) {
 	text = ApplyPadding(text).(Text)
 
 	drawText(img, []string{"Hello, World!", "sdgsg"}, text.StyleText.Font, float64(text.StyleText.FontSize), text.StyleText.FontColor, text.Properties.Center.X, text.Properties.Center.Y)
+
+	return []Area{}
 
 }
 

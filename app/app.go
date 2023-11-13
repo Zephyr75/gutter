@@ -92,6 +92,9 @@ func (app App) Run(widget func(app App) ui.UIElement) {
 
     first := true
 
+    lastMap := map[string]bool{}
+    areas := []ui.Area{}
+
     for !window.ShouldClose() {
 
         var w, h = window.GetSize()
@@ -105,19 +108,36 @@ func (app App) Run(widget func(app App) ui.UIElement) {
         // MODIFY OR LOAD IMAGE HERE
         // -------------------------
 
-        // parent.Draw(img, window)
-
-        // 
-        // exit.Draw(img, window)
-
         instance := widget(app)
         
         lastInstance = instance
+
+
+        equal := true
+        for _, area := range areas {
+          if ui.MouseInBounds(window, area) != lastMap[area.ToString()] {
+            equal = false
+          }
+          if ui.MouseInBounds(window, area) && window.GetMouseButton(glfw.MouseButtonLeft) == glfw.Press {
+            area.Function()
+          }
+        }
     
-        if lastInstance.ToString() != instance.ToString() || first {
-          instance.Draw(img, window)
+        if lastInstance.ToString() != instance.ToString() || !equal || first {
+          areas = instance.Draw(img, window)
+          // Remove all empty areas
+          newAreas := []ui.Area{}
+          for _, area := range areas {
+            if area.Left != 0 || area.Right != 0 || area.Top != 0 || area.Bottom != 0 {
+              newAreas = append(newAreas, area)
+            }
+          }
+          areas = newAreas
           flippedImg = imaging.FlipV(img)
           first = false
+        }
+        for _, area := range areas {
+          lastMap[area.ToString()] = ui.MouseInBounds(window, area)
         }
           
         // window.SetShouldClose(true)
