@@ -40,7 +40,7 @@ func (column Column) Draw(img *image.RGBA, window *glfw.Window) {
   // fmt.Println("Column")
   // fmt.Println(column.Properties)
 	
-	Draw(img, window, column.Properties, column.Style, nil, nil)
+	Draw(img, window, column.Properties, column.Style, "", "")
 
   availableHeight := column.Properties.Size.Height
   maxHeight := column.Properties.Size.Height
