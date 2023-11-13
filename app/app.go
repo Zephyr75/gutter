@@ -90,6 +90,8 @@ func (app App) Run(widget func(app App) ui.UIElement) {
     lastInstance := ui.Container{}.Initialize(ui.SkipAlignmentNone).(ui.UIElement)
     var flippedImg *image.NRGBA
 
+    first := true
+
     for !window.ShouldClose() {
 
         var w, h = window.GetSize()
@@ -110,24 +112,19 @@ func (app App) Run(widget func(app App) ui.UIElement) {
 
         instance := widget(app)
         
-        instance.Draw(img, window)
-    
-        if lastInstance.ToString() != instance.ToString() {
-          flippedImg = imaging.FlipV(img)
-          // fmt.Println(lastInstance.ToString())
-          // fmt.Println(instance.ToString())
-          // fmt.Println("----")
-        } else {
-          // fmt.Println("same")
-        }
         lastInstance = instance
+    
+        if lastInstance.ToString() != instance.ToString() || first {
+          instance.Draw(img, window)
+          flippedImg = imaging.FlipV(img)
+          first = false
+        }
           
         // window.SetShouldClose(true)
         // -------------------------
 
         gl.BindTexture(gl.TEXTURE_2D, texture)
         gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, int32(w), int32(h), 0, gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(flippedImg.Pix))
-        // gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, int32(w), int32(h), 0, gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(img.Pix))
 
         gl.BlitFramebuffer(0, 0, int32(w), int32(h), 0, 0, int32(w), int32(h), gl.COLOR_BUFFER_BIT, gl.LINEAR)
 
@@ -152,3 +149,4 @@ func (app App) Run(widget func(app App) ui.UIElement) {
 func (app App) Quit() {
   app.Window.SetShouldClose(true)
 }
+

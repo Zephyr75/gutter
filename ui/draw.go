@@ -40,8 +40,8 @@ func Draw(img *image.RGBA, window *glfw.Window, element UIElement) {
 		darken = true
 		// Call the function on click
 		if window.GetMouseButton(glfw.MouseButtonLeft) == glfw.Press {
-			if element.(*Button).Function != nil {
-				element.(*Button).Function()
+			if element.(Button).Function != nil {
+				element.(Button).Function()
 			}
 		}
 	}
