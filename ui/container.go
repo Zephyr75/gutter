@@ -1,79 +1,80 @@
-
 package ui
-
 
 import (
 	"image"
 	_ "image/png"
 
-
 	"github.com/go-gl/glfw/v3.3/glfw"
 )
 
-
-
-
 type Container struct {
 	Properties Properties
-	Style	   Style
+	Style      Style
 	Child      UIElement
-  Image       string
+	Image      string
 }
 
 func (container Container) Initialize(skip SkipAlignment) UIElement {
-  container.Properties = DefaultProperties(container.Properties, skip, UIContainer)
-  container.Style = DefaultStyle(container.Style)
-  return container
+	container.Properties = DefaultProperties(container.Properties, skip, UIContainer)
+	container.Style = DefaultStyle(container.Style)
+	return container
 }
 
-func (container Container) Draw(img *image.RGBA, window *glfw.Window) {
+func (container Container) Draw(img *image.RGBA, window *glfw.Window) []Area {
 
-  if !container.Properties.Initialized {
-    container = container.Initialize(SkipAlignmentNone).(Container)
-  }
+	areas := []Area{}
 
-  container = ApplyRelative(container).(Container)
-
-  container = ApplyAlignment(container).(Container)
-
-  container = ApplyPadding(container).(Container)
-
-  if container.Child != nil {
-    container.Child = container.Child.SetParent(&container.Properties)
-    container.Child = container.Child.Initialize(SkipAlignmentNone)
-  }
-
-  // if b > 200 {
-  //   fmt.Println(button)
-  // }
-
-	Draw(img, window, container.Properties, container.Style, container.Image, "")
-	
-	if container.Child != nil {
-    props := container.Child.GetProperties()
-		container.Child.SetProperties(props.Size, container.Properties.Center)
-		container.Child.Draw(img, window)
+	if !container.Properties.Initialized {
+		container = container.Initialize(SkipAlignmentNone).(Container)
 	}
-}
 
+	container = ApplyRelative(container).(Container)
+
+	container = ApplyAlignment(container).(Container)
+
+	container = ApplyPadding(container).(Container)
+
+	if container.Child != nil {
+		container.Child = container.Child.SetParent(&container.Properties)
+		container.Child = container.Child.Initialize(SkipAlignmentNone)
+	}
+
+	// if b > 200 {
+	//   fmt.Println(button)
+	// }
+
+	areas = append(areas, Draw(img, window, container))
+
+	if container.Child != nil {
+		props := container.Child.GetProperties()
+		container.Child.SetProperties(props.Size, container.Properties.Center)
+		areas = append(areas, container.Child.Draw(img, window)...)
+	}
+
+	return areas
+}
 
 func (container Container) SetProperties(size Size, center Point) UIElement {
 	container.Properties.Size = size
 	container.Properties.Center = center
-  return container
+	return container
 }
 
 func (container Container) SetParent(parent *Properties) UIElement {
-  container.Properties.Parent = parent
-  return container
+	container.Properties.Parent = parent
+	return container
 }
 
 func (container Container) GetProperties() Properties {
-  return container.Properties
+	return container.Properties
 }
 
-func (container Container) Debug() {
-	println(container.Properties.Center.Y)
+func (container Container) ToString() string {
+	result := container.Properties.ToString() +
+		container.Style.ToString() +
+		container.Image
+	if container.Child != nil {
+		result += container.Child.ToString()
+	}
+	return result
 }
-
-

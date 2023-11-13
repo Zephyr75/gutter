@@ -12,58 +12,49 @@ import (
 	"github.com/goki/freetype"
 )
 
-
 type Text struct {
 	Properties Properties
 	StyleText  StyleText
 }
 
-
 func (text Text) Initialize(skip SkipAlignment) UIElement {
-  text.Properties = DefaultProperties(text.Properties, skip, UIText)
-  return text
+	text.Properties = DefaultProperties(text.Properties, skip, UIText)
+	return text
 }
 
-func (text Text) Draw(img *image.RGBA, window *glfw.Window) {
+func (text Text) Draw(img *image.RGBA, window *glfw.Window) []Area {
 	//Draw(img, window, text.Properties, Style{})
 
+	if !text.Properties.Initialized {
+		text = text.Initialize(SkipAlignmentNone).(Text)
+	}
 
-  if !text.Properties.Initialized {
-    text = text.Initialize(SkipAlignmentNone).(Text)
-  }
+	text = ApplyRelative(text).(Text)
 
-  text = ApplyRelative(text).(Text)
-  
-  text = ApplyAlignment(text).(Text)
+	text = ApplyAlignment(text).(Text)
 
-  text = ApplyPadding(text).(Text)
+	text = ApplyPadding(text).(Text)
 
+	drawText(img, []string{"Hello, World!", "sdgsg"}, text.StyleText.Font, float64(text.StyleText.FontSize), text.StyleText.FontColor, text.Properties.Center.X, text.Properties.Center.Y)
 
-
-	drawText(img, []string{"Hello, World!","sdgsg"}, text.StyleText.Font, float64(text.StyleText.FontSize), text.StyleText.FontColor, text.Properties.Center.X, text.Properties.Center.Y)
+	return []Area{}
 
 }
-
 
 func (text Text) SetProperties(size Size, center Point) UIElement {
 	text.Properties.Size = size
 	text.Properties.Center = center
-  return text
+	return text
 }
 
 func (text Text) SetParent(parent *Properties) UIElement {
-  text.Properties.Parent = parent
-  return text
+	text.Properties.Parent = parent
+	return text
 }
 
 func (text Text) GetProperties() Properties {
-  return text.Properties
+	return text.Properties
 }
-
-func (text Text) Debug() {
-	println(text.Properties.Center.Y)
-}
-
 
 func drawText(img *image.RGBA, text []string, font string, fontSize float64, fontColor color.Color, x, y int) {
 
@@ -74,7 +65,7 @@ func drawText(img *image.RGBA, text []string, font string, fontSize float64, fon
 		return
 	}
 	f, err := freetype.ParseFont(fontBytes)
-  if err != nil {
+	if err != nil {
 		log.Println(err)
 		return
 	}
@@ -98,4 +89,9 @@ func drawText(img *image.RGBA, text []string, font string, fontSize float64, fon
 		}
 		pt.Y += c.PointToFixed(fontSize * 1.5)
 	}
+}
+
+func (text Text) ToString() string {
+	return text.Properties.ToString() +
+		text.StyleText.ToString()
 }
