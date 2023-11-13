@@ -62,10 +62,13 @@ func Draw(img *image.RGBA, window *glfw.Window, element UIElement) Area {
 		hoverFile = element.(Button).HoverImage
 	case props.Type == UIRow:
 		style = element.(Row).Style
+		file = element.(Row).Image
 	case props.Type == UIColumn:
 		style = element.(Column).Style
+		file = element.(Column).Image
 	case props.Type == UIContainer:
 		style = element.(Container).Style
+		file = element.(Container).Image
 	}
 
 	var col color.Color

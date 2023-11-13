@@ -11,6 +11,7 @@ type Column struct {
 	Properties Properties
 	Style      Style
 	Children   []UIElement
+	Image      string
 }
 
 func (column Column) Initialize(skip SkipAlignment) UIElement {

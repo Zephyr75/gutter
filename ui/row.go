@@ -11,6 +11,7 @@ type Row struct {
 	Properties Properties
 	Style      Style
 	Children   []UIElement
+	Image      string
 }
 
 func (row Row) Initialize(skip SkipAlignment) UIElement {
