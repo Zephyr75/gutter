@@ -16,6 +16,7 @@ type Row struct {
 
 func (row Row) Initialize(skip SkipAlignment) UIElement {
 	row.Properties = DefaultProperties(row.Properties, skip, UIRow)
+	row.Style = DefaultStyle(row.Style)
 	return row
 }
 

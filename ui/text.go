@@ -19,6 +19,7 @@ type Text struct {
 
 func (text Text) Initialize(skip SkipAlignment) UIElement {
 	text.Properties = DefaultProperties(text.Properties, skip, UIText)
+	text.StyleText = DefaultStyleText(text.StyleText)
 	return text
 }
 

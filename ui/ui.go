@@ -208,6 +208,20 @@ func (s Style) ToString() string {
 	return strconv.Itoa(int(r)) + strconv.Itoa(int(g)) + strconv.Itoa(int(b)) + strconv.Itoa(int(a))
 }
 
+func DefaultStyleText(style StyleText) StyleText {
+	newStyle := style
+	if newStyle.Font == "" {
+		newStyle.Font = "Arial"
+	}
+	if newStyle.FontSize == 0 {
+		newStyle.FontSize = 12
+	}
+	if newStyle.FontColor == nil {
+		newStyle.FontColor = color.RGBA{0, 0, 0, 255}
+	}
+	return newStyle
+}
+
 type StyleText struct {
 	Font      string
 	FontSize  int

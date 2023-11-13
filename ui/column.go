@@ -16,6 +16,7 @@ type Column struct {
 
 func (column Column) Initialize(skip SkipAlignment) UIElement {
 	column.Properties = DefaultProperties(column.Properties, skip, UIColumn)
+	column.Style = DefaultStyle(column.Style)
 	return column
 }
 
