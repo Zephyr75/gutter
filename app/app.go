@@ -158,6 +158,10 @@ func (app App) Run(widget func(app App) ui.UIElement) {
         ///
 
 
+        // TODO: Store loaded image instead of its name
+        // TODO: Store last resized image version to avoid recomputing if change is not related to image size
+
+
 
     }
 }
