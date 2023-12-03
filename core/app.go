@@ -1,4 +1,4 @@
-package app
+package core
 
 import (
 	"fmt"
@@ -32,6 +32,10 @@ func init() {
     // GLFW: This is needed to arrange that main() runs on main thread.
     // See documentation for functions that are only allowed to be called from the main thread.
     runtime.LockOSThread()
+}
+
+func (app App) Quit() {
+	app.Window.SetShouldClose(true)
 }
 
 func (app App) Run(widget func(app App) ui.UIElement) {
@@ -166,8 +170,4 @@ func (app App) Run(widget func(app App) ui.UIElement) {
     }
 }
 
-
-func (app App) Quit() {
-  app.Window.SetShouldClose(true)
-}
 

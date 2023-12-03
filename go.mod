@@ -8,7 +8,6 @@ require (
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20221017161538-93cebf72946b
 	github.com/goki/freetype v1.0.1
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
-	github.com/phrozen/blend v0.0.0-20210220204729-f26b6cf7a28e
 )
 
 require golang.org/x/image v0.6.0 // indirect
