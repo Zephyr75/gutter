@@ -7,22 +7,23 @@ A Flutter inspired UI framework written in Go with OpenGL rendering
 ```go
 package main
 
-import (
-	"github.com/Zephyr75/gutter/test"
-	"github.com/Zephyr75/gutter/app"
-)
+import (...)
 
 func main() {
-
-  app := app.App {
+  myApp := app.App {
     Name: "Gutter",
     Width: 800,
     Height: 600,
   }
-
-  app.Run(test.MainWindow)
-
+  myApp.Run(test.MainWindow)
 }
+
+func MainWindow(app core.App) ui.UIElement {
+    return ui.Row{
+        ...
+    }
+}
+
 ```
 
 <details>
