@@ -28,11 +28,7 @@ func (container Container) Draw(img *image.RGBA, window *glfw.Window) []Area {
 		container = container.Initialize(SkipAlignmentNone).(Container)
 	}
 
-	container = ApplyRelative(container).(Container)
-
-	container = ApplyAlignment(container).(Container)
-
-	container = ApplyPadding(container).(Container)
+	container.Properties = ApplyLayout(container.Properties)
 
 	if container.Child != nil {
 		container.Child = container.Child.SetParent(&container.Properties)
@@ -47,7 +43,7 @@ func (container Container) Draw(img *image.RGBA, window *glfw.Window) []Area {
 
 	if container.Child != nil {
 		props := container.Child.GetProperties()
-		container.Child.SetProperties(props.Size, container.Properties.Center)
+		container.Child = container.Child.SetProperties(props.Size, container.Properties.Center)
 		areas = append(areas, container.Child.Draw(img, window)...)
 	}
 
@@ -67,6 +63,18 @@ func (container Container) SetParent(parent *Properties) UIElement {
 
 func (container Container) GetProperties() Properties {
 	return container.Properties
+}
+
+func (container Container) Hash(h *Hasher) {
+	container.Properties.Hash(h)
+	container.Style.Hash(h)
+	h.String(container.Image)
+	if container.Child != nil {
+		h.Bool(true)
+		container.Child.Hash(h)
+		return
+	}
+	h.Bool(false)
 }
 
 func (container Container) ToString() string {

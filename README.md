@@ -1,6 +1,19 @@
 # Gutter :sweat_drops:
 A Flutter inspired UI framework written in Go with OpenGL rendering
 
+## Running the demo
+
+```sh
+go run .          # font and image paths in main.go are relative to the repo root
+go test ./...     # layout, hashing and text, none of which need a window
+OUT=/tmp/demo.png go test . -run TestDemoRenders   # rasterise the demo to a PNG
+```
+
+The demo prints `FPS` and `redraws/s` to the terminal. The second number is the one
+that matters: the widget tree is rebuilt every frame, but it is only rasterised
+when its hash or the set of hovered widgets actually changed, so an idle window
+sits at zero redraws.
+
 ## Documentation
 
 ### Getting started
@@ -79,10 +92,16 @@ ui.Button{
 
 ### Text
 
+`Content` is the string to draw; embedded newlines start a new line. The text is
+left-aligned inside the widget's own box and the block is centred vertically, so
+padding is what positions it. It is clipped to that box rather than painted over
+its neighbours.
+
 ```go
 ui.Text{
     Properties: ui.Properties{
       Alignment: ui.AlignmentTopLeft,
+      Padding: ui.PaddingSymmetric(ui.ScalePixel, 0, 10),
       Size: ui.Size{
         Scale:  ui.ScalePixel,
         Width:  100,
@@ -94,6 +113,7 @@ ui.Text{
       FontSize: 15,
       FontColor: black,
     },
+    Content: "hello\nworld",
 }
 ```
 

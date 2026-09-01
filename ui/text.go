@@ -2,19 +2,20 @@ package ui
 
 import (
 	"image"
-	"image/color"
+	"os"
+	"strings"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
 
-	"io/ioutil"
-	"log"
-
 	"github.com/goki/freetype"
+	"github.com/goki/freetype/truetype"
 )
 
 type Text struct {
 	Properties Properties
 	StyleText  StyleText
+	// Content is the string to draw. Embedded newlines start a new line.
+	Content string
 }
 
 func (text Text) Initialize(skip SkipAlignment) UIElement {
@@ -24,19 +25,26 @@ func (text Text) Initialize(skip SkipAlignment) UIElement {
 }
 
 func (text Text) Draw(img *image.RGBA, window *glfw.Window) []Area {
-	//Draw(img, window, text.Properties, Style{})
 
 	if !text.Properties.Initialized {
 		text = text.Initialize(SkipAlignmentNone).(Text)
 	}
 
-	text = ApplyRelative(text).(Text)
+	text.Properties = ApplyLayout(text.Properties)
 
-	text = ApplyAlignment(text).(Text)
+	if text.Content == "" {
+		return []Area{}
+	}
 
-	text = ApplyPadding(text).(Text)
+	props := text.Properties
+	rect := image.Rect(
+		props.Center.X-props.Size.Width/2,
+		props.Center.Y-props.Size.Height/2,
+		props.Center.X+props.Size.Width/2,
+		props.Center.Y+props.Size.Height/2,
+	)
 
-	drawText(img, []string{"Hello, World!", "sdgsg"}, text.StyleText.Font, float64(text.StyleText.FontSize), text.StyleText.FontColor, text.Properties.Center.X, text.Properties.Center.Y)
+	drawText(img, strings.Split(text.Content, "\n"), text.StyleText, rect)
 
 	return []Area{}
 
@@ -57,42 +65,109 @@ func (text Text) GetProperties() Properties {
 	return text.Properties
 }
 
-func drawText(img *image.RGBA, text []string, font string, fontSize float64, fontColor color.Color, x, y int) {
-
-	// Load font
-	fontBytes, err := ioutil.ReadFile(font)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	f, err := freetype.ParseFont(fontBytes)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	// Load freetype context
-	c := freetype.NewContext()
-	c.SetDPI(72)
-	c.SetFont(f)
-	c.SetFontSize(fontSize)
-	c.SetClip(img.Bounds())
-	c.SetDst(img)
-	c.SetSrc(image.NewUniform(fontColor))
-
-	// Draw the text
-	pt := freetype.Pt(x, y+int(c.PointToFixed(fontSize)>>6))
-	for _, s := range text {
-		_, err := c.DrawString(s, pt)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-		pt.Y += c.PointToFixed(fontSize * 1.5)
-	}
+func (text Text) Hash(h *Hasher) {
+	text.Properties.Hash(h)
+	text.StyleText.Hash(h)
+	h.String(text.Content)
 }
 
 func (text Text) ToString() string {
 	return text.Properties.ToString() +
-		text.StyleText.ToString()
+		text.StyleText.ToString() +
+		text.Content
+}
+
+// Reading and parsing a font file, and then building a rasterising context for
+// it, used to happen once per Text per frame. Both are cached: the parse by
+// path, the context by path and size.
+//
+// The context cache is the one that matters. freetype.Context keeps an internal
+// cache of rasterised glyphs which SetFont and SetFontSize discard -- and both
+// return early when the value is unchanged -- so a context that survives across
+// frames rasterises each glyph once rather than once per frame. SetDst, SetSrc
+// and SetClip leave that cache intact, which is why they can still be set per
+// call.
+var (
+	parsedFonts   = map[string]*truetype.Font{}
+	parsedFontErr = map[string]error{}
+	textContexts  = map[textContextKey]*freetype.Context{}
+)
+
+type textContextKey struct {
+	font string
+	size int
+}
+
+// textFill is reused for the glyph colour; the context reads it synchronously
+// during DrawString and the UI is single-threaded.
+var textFill image.Uniform
+
+func loadFont(path string) (*truetype.Font, error) {
+	if f, ok := parsedFonts[path]; ok {
+		return f, parsedFontErr[path]
+	}
+
+	b, err := os.ReadFile(path)
+	if err != nil {
+		parsedFonts[path], parsedFontErr[path] = nil, err
+		return nil, err
+	}
+	f, err := freetype.ParseFont(b)
+	parsedFonts[path], parsedFontErr[path] = f, err
+	return f, err
+}
+
+func textContext(fontPath string, fontSize int) (*freetype.Context, error) {
+	key := textContextKey{fontPath, fontSize}
+	if c, ok := textContexts[key]; ok {
+		if c == nil {
+			return nil, parsedFontErr[fontPath]
+		}
+		return c, nil
+	}
+
+	f, err := loadFont(fontPath)
+	if err != nil {
+		textContexts[key] = nil
+		return nil, err
+	}
+
+	c := freetype.NewContext()
+	c.SetDPI(72)
+	c.SetFont(f)
+	c.SetFontSize(float64(fontSize))
+	// Hinting is deliberately left at the default. SetHinting(font.HintingFull)
+	// makes the first DrawString on a fresh context emit no pixels at all, which
+	// is invisible when a context is thrown away every frame and very visible
+	// once contexts are cached.
+	textContexts[key] = c
+	return c, nil
+}
+
+// drawText lays the lines out inside rect: left-aligned, and the block as a
+// whole centred vertically. The clip is the widget's own box, so a string that
+// is too long is cut off rather than painted over its neighbours.
+func drawText(img *image.RGBA, lines []string, style StyleText, rect image.Rectangle) {
+	c, err := textContext(style.Font, style.FontSize)
+	if err != nil {
+		return
+	}
+
+	textFill.C = style.FontColor
+	c.SetDst(img)
+	c.SetSrc(&textFill)
+	c.SetClip(rect)
+
+	size := float64(style.FontSize)
+	lineHeight := int(c.PointToFixed(size*1.5) >> 6)
+	ascent := int(c.PointToFixed(size) >> 6)
+
+	top := rect.Min.Y + (rect.Dy()-lineHeight*len(lines))/2
+	pt := freetype.Pt(rect.Min.X, top+ascent)
+	for _, s := range lines {
+		if _, err := c.DrawString(s, pt); err != nil {
+			return
+		}
+		pt.Y += c.PointToFixed(size * 1.5)
+	}
 }

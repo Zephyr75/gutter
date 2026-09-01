@@ -92,8 +92,10 @@ type Size struct {
 	Height int
 }
 
+// ToString is kept for callers that predate Hash. Fields are comma-separated
+// because concatenating them let Size{1, 23} and Size{12, 3} both produce "123".
 func (s Size) ToString() string {
-	return strconv.Itoa(s.Width) + strconv.Itoa(s.Height) + strconv.FormatBool(bool(s.Scale))
+	return strconv.Itoa(s.Width) + "," + strconv.Itoa(s.Height) + "," + strconv.FormatBool(bool(s.Scale))
 }
 
 type UIElement interface {
@@ -103,6 +105,9 @@ type UIElement interface {
 	Initialize(skip SkipAlignment) UIElement
 	SetParent(parent *Properties) UIElement
 	ToString() string
+	// Hash mixes everything that affects this widget's appearance into h. It is
+	// the allocation-free replacement for comparing ToString between frames.
+	Hash(h *Hasher)
 }
 
 type UIType byte
@@ -147,7 +152,7 @@ type Properties struct {
 }
 
 func (p Properties) ToString() string {
-	return p.Center.ToString() + p.Size.ToString() + p.Type.ToString()
+	return p.Center.ToString() + ";" + p.Size.ToString() + ";" + p.Type.ToString()
 }
 
 func DefaultProperties(props Properties, skip SkipAlignment, uitype UIType) Properties {
@@ -204,8 +209,11 @@ type Style struct {
 }
 
 func (s Style) ToString() string {
+	if s.Color == nil {
+		return "nil"
+	}
 	r, g, b, a := s.Color.RGBA()
-	return strconv.Itoa(int(r)) + strconv.Itoa(int(g)) + strconv.Itoa(int(b)) + strconv.Itoa(int(a))
+	return strconv.Itoa(int(r)) + "," + strconv.Itoa(int(g)) + "," + strconv.Itoa(int(b)) + "," + strconv.Itoa(int(a))
 }
 
 func DefaultStyleText(style StyleText) StyleText {
@@ -230,7 +238,7 @@ type StyleText struct {
 
 func (s StyleText) ToString() string {
 	r, g, b, a := s.FontColor.RGBA()
-	return s.Font + strconv.Itoa(s.FontSize) + strconv.Itoa(int(r)) + strconv.Itoa(int(g)) + strconv.Itoa(int(b)) + strconv.Itoa(int(a))
+	return s.Font + "," + strconv.Itoa(s.FontSize) + "," + strconv.Itoa(int(r)) + "," + strconv.Itoa(int(g)) + "," + strconv.Itoa(int(b)) + "," + strconv.Itoa(int(a))
 }
 
 type Point struct {
@@ -239,17 +247,17 @@ type Point struct {
 }
 
 func (p Point) ToString() string {
-	return strconv.Itoa(p.X) + strconv.Itoa(p.Y)
+	return strconv.Itoa(p.X) + "," + strconv.Itoa(p.Y)
 }
 
 type Area struct {
-	Top    float64
-	Right  float64
-	Bottom float64
-	Left   float64
-	Function   func()
+	Top      float64
+	Right    float64
+	Bottom   float64
+	Left     float64
+	Function func()
 }
 
 func (a Area) ToString() string {
-	return strconv.Itoa(int(a.Top)) + strconv.Itoa(int(a.Right)) + strconv.Itoa(int(a.Bottom)) + strconv.Itoa(int(a.Left))
+	return strconv.Itoa(int(a.Top)) + "," + strconv.Itoa(int(a.Right)) + "," + strconv.Itoa(int(a.Bottom)) + "," + strconv.Itoa(int(a.Left))
 }

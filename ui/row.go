@@ -1,7 +1,6 @@
 package ui
 
 import (
-	// "fmt"
 	"image"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -21,7 +20,6 @@ func (row Row) Initialize(skip SkipAlignment) UIElement {
 }
 
 func (row Row) Draw(img *image.RGBA, window *glfw.Window) []Area {
-	// fmt.Println("--------------------")
 
 	areas := []Area{}
 
@@ -29,11 +27,7 @@ func (row Row) Draw(img *image.RGBA, window *glfw.Window) []Area {
 		row = row.Initialize(SkipAlignmentNone).(Row)
 	}
 
-	row = ApplyRelative(row).(Row)
-
-	row = ApplyAlignment(row).(Row)
-
-	row = ApplyPadding(row).(Row)
+	row.Properties = ApplyLayout(row.Properties)
 
 	for i, child := range row.Children {
 		child = child.SetParent(&row.Properties)
@@ -42,13 +36,9 @@ func (row Row) Draw(img *image.RGBA, window *glfw.Window) []Area {
 
 	areas = append(areas, Draw(img, window, row))
 
+	// Fixed-size children claim their width first
 	availableWidth := row.Properties.Size.Width
 	maxWidth := row.Properties.Size.Width
-	if row.Properties.Size.Scale == ScaleRelative {
-		availableWidth = row.Properties.Size.Width * maxWidth / 100
-	}
-
-	// Compute the available width
 	for _, child := range row.Children {
 		childProps := child.GetProperties()
 		if childProps.Size.Scale == ScalePixel {
@@ -56,7 +46,8 @@ func (row Row) Draw(img *image.RGBA, window *glfw.Window) []Area {
 		}
 	}
 
-	// Compute the total percentage of width required by the children
+	// What is left is shared among the relative children, in proportion to the
+	// percentages they declared
 	childrenWidth := 0
 	for _, child := range row.Children {
 		childProps := child.GetProperties()
@@ -65,37 +56,29 @@ func (row Row) Draw(img *image.RGBA, window *glfw.Window) []Area {
 		}
 	}
 
-	// Compute the width of each child
-	for i, child := range row.Children {
-		childProps := child.GetProperties()
-		if childProps.Size.Scale == ScaleRelative {
-			row.Children[i] = child.SetProperties(
-				Size{
-					Scale:  ScalePixel,
-					Width:  childProps.Size.Width * availableWidth / childrenWidth,
-					Height: row.Properties.Size.Height,
-				},
-				Point{
-					X: childProps.Center.X,
-					Y: childProps.Center.Y,
-				},
-			)
-		}
-	}
-
-	// Compute the center of each child
+	// Size and place every child in one pass
 	currentX := row.Properties.Center.X - maxWidth/2
 	for i, child := range row.Children {
 		childProps := child.GetProperties()
+
 		pixelWidth := childProps.Size.Width
+		pixelHeight := childProps.Size.Height
 		if childProps.Size.Scale == ScaleRelative {
-			pixelWidth = childProps.Size.Width * availableWidth / childrenWidth
+			// childrenWidth is zero when every relative child declared a width of
+			// zero, which used to divide by zero and take the process with it
+			pixelWidth = 0
+			if childrenWidth > 0 {
+				pixelWidth = childProps.Size.Width * availableWidth / childrenWidth
+			}
+			// A relative child fills the row's height
+			pixelHeight = row.Properties.Size.Height
 		}
+
 		row.Children[i] = child.SetProperties(
 			Size{
-				Scale:  childProps.Size.Scale,
-				Width:  childProps.Size.Width,
-				Height: childProps.Size.Height,
+				Scale:  ScalePixel,
+				Width:  pixelWidth,
+				Height: pixelHeight,
 			},
 			Point{
 				X: currentX + pixelWidth/2,
@@ -106,7 +89,6 @@ func (row Row) Draw(img *image.RGBA, window *glfw.Window) []Area {
 	}
 
 	for _, child := range row.Children {
-		// fmt.Println(child)
 		areas = append(areas, child.Draw(img, window)...)
 	}
 
@@ -127,6 +109,16 @@ func (row Row) SetParent(parent *Properties) UIElement {
 
 func (row Row) GetProperties() Properties {
 	return row.Properties
+}
+
+func (row Row) Hash(h *Hasher) {
+	row.Properties.Hash(h)
+	row.Style.Hash(h)
+	h.String(row.Image)
+	h.Int(len(row.Children))
+	for _, child := range row.Children {
+		child.Hash(h)
+	}
 }
 
 func (row Row) ToString() string {

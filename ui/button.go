@@ -40,11 +40,7 @@ func (button Button) Draw(img *image.RGBA, window *glfw.Window) []Area {
 		button = button.Initialize(SkipAlignmentNone).(Button)
 	}
 
-	button = ApplyRelative(button).(Button)
-
-	button = ApplyAlignment(button).(Button)
-
-	button = ApplyPadding(button).(Button)
+	button.Properties = ApplyLayout(button.Properties)
 
 	if button.Child != nil {
 		button.Child = button.Child.SetParent(&button.Properties)
@@ -59,7 +55,7 @@ func (button Button) Draw(img *image.RGBA, window *glfw.Window) []Area {
 
 	if button.Child != nil {
 		props := button.Child.GetProperties()
-		button.Child.SetProperties(props.Size, button.Properties.Center)
+		button.Child = button.Child.SetProperties(props.Size, button.Properties.Center)
 		areas = append(areas, button.Child.Draw(img, window)...)
 	}
 
@@ -79,6 +75,19 @@ func (button Button) SetParent(parent *Properties) UIElement {
 
 func (button Button) GetProperties() Properties {
 	return button.Properties
+}
+
+func (button Button) Hash(h *Hasher) {
+	button.Properties.Hash(h)
+	button.Style.Hash(h)
+	h.String(button.Image)
+	h.String(button.HoverImage)
+	if button.Child != nil {
+		h.Bool(true)
+		button.Child.Hash(h)
+		return
+	}
+	h.Bool(false)
 }
 
 func (button Button) ToString() string {

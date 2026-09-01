@@ -1,3 +1,5 @@
-- [ ] Avoid resizing on each frame -> 2x improvement
-- [ ] Avoid reloading on each frame -> 1.5x improvement
+- [x] Avoid resizing on each frame -> decoded images and their resampled variants are cached by path and size (`utils/loader.go`)
+- [x] Avoid reloading on each frame -> fonts are parsed once and their freetype contexts are kept, so glyphs rasterise once rather than once per frame (`ui/text.go`)
+- [x] Repaint only when something changed -> the host loop hashes the tree and the hover set, and skips the rasterise, the flip and the texture upload when both are unchanged (`core/app.go`)
 - [ ] Clean up
+- [ ] Split layout from paint, so widgets emit a draw list instead of pixels (see PLAN.md, phase 3)
