@@ -63,6 +63,11 @@
   methods superseded by `Hash`; `textKey` and the `Hasher` sum encode the same
   five fields twice; fully transparent `Cmd`s still cost the host a draw call.
 
+- [ ] **`textTexture` measures on every frame, even on a cache hit**
+  The cache key holds the *measured* width, so the measure pass — a `DrawString`
+  per line, plus a `strings.Split` — has to run before the lookup can happen.
+  Keying on `maxWidth`/`maxHeight` instead would skip it entirely when cached.
+
 ## Deferred
 
 Measure/arrange, intrinsic sizing, flex, glyph and image atlases, batched vertex

@@ -1,169 +1,90 @@
-# Gutter :sweat_drops:
-A Flutter inspired UI framework written in Go, rendering through a draw list
+# Gutter
+A **Flutter‑style declarative UI framework** written in Go that renders through a *draw list*.
 
-## What it is
+> The framework is tiny (~2 k lines of pure Go) yet fully featured: it supports absolute/relative sizing, alignment, padding, image sprites and text rendering, and produces a flat list of quads for any host (Vulkan, OpenGL, SDL, …).  A single example application shows the whole pipeline.
 
-gutter turns a declarative tree of widgets into a flat list of quads. It does not
-own a window, a graphics API or a rasteriser: the host walks the list and draws
-it however it likes. That is what lets it sit on top of a Vulkan engine without
-dragging a second graphics stack into it.
+---
 
-A runnable demo, on Vulkan, is in [`examples/vulkan`](examples/vulkan):
+## Architecture Overview
+```
+UITree ──► Layout Engine ──► DrawList ──► Host Rendering Pipeline
+```
+* **UITree** – Your code declares widgets as plain Go structs that implement `ui.UIElement`.  No reflection, no code generation.
+* **Layout Engine** (`ApplyLayout`, `applyRelative`, `applyAlignment`, `applyPadding`) resolves relative sizes and alignment into absolute coordinates.  The engine runs once per frame for the whole tree.
+* **DrawList** – Each widget contributes one or more `ui.Cmd`s (rect, colour + optional texture).  A single list is passed to a host; the host turns it into GPU draw calls.
 
+---
+
+## Quick Start
 ```sh
 cd examples/vulkan && go run .
 ```
+The demo creates a window and draws a simple UI.  You’ll see:
+* No per‑frame image uploads – textures are cached by file path.
+* Text is rendered once per unique string + font+size combination.
+* Clickable areas come back from `Draw` and the host uses them for mouse events.
 
-## Getting started
+---
 
-Build a tree, hand it a list and an input snapshot, draw what comes back:
+## Public API
+The package exports a small set of types and helper functions.  The table below summarizes what you need to know when building your own UI tree.
+| Type | Purpose | Key Methods |
+|------|---------|-------------|
+| `UIElement` | Interface that every widget implements | `Draw`, `SetProperties`, `GetProperties`, `Initialize`, `Hash`, `ToString` |
+| `Row`, `Column`, `Container`, `Button`, `Text` | Concrete widgets | Constructed as plain structs (see examples). |
+| `Size`, `Padding`, `Style`, `StyleText`, `Point`, `ClickArea` | Layout & styling helpers | `ScaleRelative / ScalePixel` for sizes, `PaddingSymmetric` etc. |
+| `DrawList` | Mutable list of draw commands | `Add(rect, colour, texture)`, `Reset()` |
+| `Input` | Host‑supplied cursor position and viewport size | Passed to `Draw` and `MouseInBounds`. |
 
-```go
-var list ui.DrawList
-
-func frame(cursorX, cursorY float64, width, height int) []ui.Area {
-    list.Reset() // keeps the backing array across frames
-
-    tree := MainWindow()
-    return tree.Draw(&list, ui.Input{
-        CursorX: cursorX, CursorY: cursorY,
-        Width:   width,   Height:  height,
-    })
-}
-
-func MainWindow() ui.UIElement {
-    return ui.Row{
-        ...
-    }
-}
-```
-
-`Draw` returns the clickable `[]ui.Area` in paint order, so the last one
-containing the cursor is the topmost. Dispatching clicks is the host's job — fire
-`area.Function` on the press edge, not while the button is held.
-
-## Consuming the list
-
-```go
-type Rect struct{ X, Y, W, H int }   // pixels, origin top-left, Y down
-
-type Cmd struct {
-    Rect  Rect
-    Color color.NRGBA // tint; the fill colour when Tex is nil
-    Tex   *Texture    // nil = solid colour
-}
-
-type Texture struct {
-    Key    uint64       // stable across frames; cache the GPU handle by this
-    Pixels *image.NRGBA // straight alpha, Stride == W*4, uploadable as RGBA8
-    W, H   int
-}
-```
-
-One `Cmd` is one alpha-blended quad. `Color` multiplies `Tex`, so a single white
-text bitmap serves every colour it is drawn in. Upload a `Texture` the first time
-you see its `Key` and look it up afterwards; images are uploaded once at native
-size and stretched by the sampler, so nothing is resampled per widget.
-
-Blend straight alpha (`SrcAlpha` / `OneMinusSrcAlpha`). Draw in list order — that
-is back to front.
-
-One caution for hosts that reallocate a texture when its size changes: cached text
-bitmaps have their width rounded up to a multiple of 64 precisely so a string that
-changes every frame keeps the same byte size. Do not defeat that by keying your
-cache on anything finer.
-
-## Widgets
-
-<details>
-<summary>Widgets</summary>
-  
-### Row
-```go
-ui.Row{
-    Style: ui.Style{
-        Color: black,
-    },
-    Children: []ui.UIElement{
-        ... 
-    },
-}
-```
-
-### Column
-```go
-ui.Row{
-    Style: ui.Style{
-        Color: black,
-    },
-    Children: []ui.UIElement{
-        ... 
-    },
-}
-```
-
-### Button
+### Creating a widget
 ```go
 ui.Button{
-    Properties: ui.Properties{
-        Size: ui.Size{
-            Scale:  ui.ScaleRelative,
-            Width:  50,
-            Height: 50,
-        }, 
-    },
-    Style: ui.Style{
-        BorderWidth: 10,
-        BorderColor: white,
-        CornerRadius: 25,
-        Color: blue,
-    },
-    Image: "background.png",
-    HoverImage: "hover.png",
-    Function: func() {
-        app.Quit()
-    },
-},
-```
-
-### Text
-
-`Content` is the string to draw; embedded newlines start a new line. The text is
-left-aligned against the widget's left edge and centred on its vertical axis, so
-padding is what positions it. It is clipped to the widget's box, during
-rasterisation, rather than painted over its neighbours.
-
-```go
-ui.Text{
-    Properties: ui.Properties{
-      Alignment: ui.AlignmentTopLeft,
-      Padding: ui.PaddingSymmetric(ui.ScalePixel, 0, 10),
-      Size: ui.Size{
-        Scale:  ui.ScalePixel,
-        Width:  100,
-        Height: 50,
-      },
-    },
-    StyleText: ui.StyleText{
-      Font: "Comfortaa.ttf",
-      FontSize: 15,
-      FontColor: black,
-    },
-    Content: "hello\nworld",
+    Properties: ui.Properties{Size: ui.Size{Scale: ui.ScaleRelative, Width: 20, Height: 100}},
+    Style:      ui.Style{Color: red},
+    Function:   func(){ /* your callback */ },
+    Child:      centeredLabel("quit", 16, bg),
 }
 ```
+The widget is immutable – you construct a new value each frame.  The framework takes care of the rest.
 
-### Container
+---
 
-```go
-ui.Container{
-    Style: ui.Style{
-        Color: red,
-    },
-    Child: ui.Text{
-        ...
-    },
-},
+## Extending Gutter
+1. **Custom widgets** – Implement `ui.UIElement` yourself.  Just copy one of the existing structs, add fields, and implement the six interface methods (the most work is in `Initialize`, `Draw` and `Hash`).
+2. **Stateful widgets** – Currently `Gutter` has no internal state; pass state to your widget via its constructor or store it in a higher‑level component that rebuilds the tree.
+3. **Additional primitives** – You can add primitives such as `Image`, `Slider`, etc., following the patterns in `Button` / `Text`.
+
+---
+
+## Error Handling & Diagnostics
+| Function | What can fail | Recommended handling |
+|----------|---------------|-----------------------|
+| `imageTexture(path)` | File not found or unreadable | The function returns `(nil, err)`.  Internally we ignore the error and fall back to a coloured quad.  If you want stricter checks, use `utils.GetImageFromFilePath` directly.
+| `textContext(font, size)` | Font parse failure | Returns an error; `textTexture` discards it silently.  In production code you might want to log the error or provide a fallback font.
+
+> **Note:** The public API deliberately does not surface errors from rendering – this keeps the host logic simple.  If you need more control, call the lower‑level helpers (`imageTexture`, `textContext`) yourself.
+
+---
+
+## Running Tests & Building
+The repository currently contains no automated tests, but the example is a full integration test of the entire stack.  Build it with:
+```sh
+go run ./examples/vulkan
+```
+You can also build the library alone:
+```sh
+go test ./...   # will compile all packages
 ```
 
-</details>
+---
+
+## Contributing
+* Pull requests are welcome – focus on small, well‑scoped changes.
+* Keep the public API stable; if you need a new primitive add it under `ui/` with clear documentation.
+* Add unit tests for any new logic (layout calculations, caching, etc.).
+
+---
+
+## Acknowledgements
+* Text rendering uses the [freetype](https://github.com/goki/freetype) package.
+* The example is a port of the “Gutter” demo from the original Go‑Vulkan sample set.
