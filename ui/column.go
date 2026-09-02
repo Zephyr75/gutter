@@ -1,11 +1,5 @@
 package ui
 
-import (
-	"image"
-
-	"github.com/go-gl/glfw/v3.3/glfw"
-)
-
 type Column struct {
 	Properties Properties
 	Style      Style
@@ -13,28 +7,30 @@ type Column struct {
 	Image      string
 }
 
-func (column Column) Initialize(skip SkipAlignment) UIElement {
-	column.Properties = DefaultProperties(column.Properties, skip, UIColumn)
+func (column Column) Initialize(in Input, skip SkipAlignment) UIElement {
+	column.Properties = DefaultProperties(column.Properties, in, skip, UIColumn)
 	column.Style = DefaultStyle(column.Style)
 	return column
 }
 
-func (column Column) Draw(img *image.RGBA, window *glfw.Window) []Area {
+func (column Column) Draw(dl *DrawList, in Input) []ClickArea {
 
-	areas := []Area{}
+	areas := []ClickArea{}
 
 	if !column.Properties.Initialized {
-		column = column.Initialize(SkipAlignmentNone).(Column)
+		column = column.Initialize(in, SkipAlignmentNone).(Column)
 	}
 
 	column.Properties = ApplyLayout(column.Properties)
 
 	for i, child := range column.Children {
 		child = child.SetParent(&column.Properties)
-		column.Children[i] = child.Initialize(SkipAlignmentVert)
+		column.Children[i] = child.Initialize(in, SkipAlignmentVert)
 	}
 
-	areas = append(areas, Draw(img, window, column))
+	if area, ok := Draw(dl, in, column); ok {
+		areas = append(areas, area)
+	}
 
 	// Fixed-size children claim their height first
 	availableHeight := column.Properties.Size.Height
@@ -89,7 +85,7 @@ func (column Column) Draw(img *image.RGBA, window *glfw.Window) []Area {
 	}
 
 	for _, child := range column.Children {
-		areas = append(areas, child.Draw(img, window)...)
+		areas = append(areas, child.Draw(dl, in)...)
 	}
 
 	return areas

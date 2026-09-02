@@ -1,13 +1,5 @@
 package ui
 
-import (
-	// "fmt"
-	"image"
-	// "image/color"
-
-	"github.com/go-gl/glfw/v3.3/glfw"
-)
-
 type Button struct {
 	Properties Properties
 	Style      Style
@@ -17,46 +9,35 @@ type Button struct {
 	HoverImage string
 }
 
-func (button Button) Initialize(skip SkipAlignment) UIElement {
-	button.Properties = DefaultProperties(button.Properties, skip, UIButton)
+func (button Button) Initialize(in Input, skip SkipAlignment) UIElement {
+	button.Properties = DefaultProperties(button.Properties, in, skip, UIButton)
 	button.Style = DefaultStyle(button.Style)
 	return button
 }
 
-func (button Button) Draw(img *image.RGBA, window *glfw.Window) []Area {
+func (button Button) Draw(dl *DrawList, in Input) []ClickArea {
 
-	areas := []Area{}
-
-	// get color
-	// _, _, b, _ := button.Style.Color.RGBA()
-
-	// if b > 200 {
-	//   fmt.Println("--------------------")
-	//   fmt.Println(button.Properties.Parent)
-	//   fmt.Println(button)
-	// }
+	areas := []ClickArea{}
 
 	if !button.Properties.Initialized {
-		button = button.Initialize(SkipAlignmentNone).(Button)
+		button = button.Initialize(in, SkipAlignmentNone).(Button)
 	}
 
 	button.Properties = ApplyLayout(button.Properties)
 
 	if button.Child != nil {
 		button.Child = button.Child.SetParent(&button.Properties)
-		button.Child = button.Child.Initialize(SkipAlignmentNone)
+		button.Child = button.Child.Initialize(in, SkipAlignmentNone)
 	}
 
-	// if b > 200 {
-	//   fmt.Println(button)
-	// }
-
-	areas = append(areas, Draw(img, window, button))
+	if area, ok := Draw(dl, in, button); ok {
+		areas = append(areas, area)
+	}
 
 	if button.Child != nil {
 		props := button.Child.GetProperties()
 		button.Child = button.Child.SetProperties(props.Size, button.Properties.Center)
-		areas = append(areas, button.Child.Draw(img, window)...)
+		areas = append(areas, button.Child.Draw(dl, in)...)
 	}
 
 	return areas

@@ -1,11 +1,5 @@
 package ui
 
-import (
-	"image"
-
-	"github.com/go-gl/glfw/v3.3/glfw"
-)
-
 type Row struct {
 	Properties Properties
 	Style      Style
@@ -13,28 +7,30 @@ type Row struct {
 	Image      string
 }
 
-func (row Row) Initialize(skip SkipAlignment) UIElement {
-	row.Properties = DefaultProperties(row.Properties, skip, UIRow)
+func (row Row) Initialize(in Input, skip SkipAlignment) UIElement {
+	row.Properties = DefaultProperties(row.Properties, in, skip, UIRow)
 	row.Style = DefaultStyle(row.Style)
 	return row
 }
 
-func (row Row) Draw(img *image.RGBA, window *glfw.Window) []Area {
+func (row Row) Draw(dl *DrawList, in Input) []ClickArea {
 
-	areas := []Area{}
+	areas := []ClickArea{}
 
 	if !row.Properties.Initialized {
-		row = row.Initialize(SkipAlignmentNone).(Row)
+		row = row.Initialize(in, SkipAlignmentNone).(Row)
 	}
 
 	row.Properties = ApplyLayout(row.Properties)
 
 	for i, child := range row.Children {
 		child = child.SetParent(&row.Properties)
-		row.Children[i] = child.Initialize(SkipAlignmentHoriz)
+		row.Children[i] = child.Initialize(in, SkipAlignmentHoriz)
 	}
 
-	areas = append(areas, Draw(img, window, row))
+	if area, ok := Draw(dl, in, row); ok {
+		areas = append(areas, area)
+	}
 
 	// Fixed-size children claim their width first
 	availableWidth := row.Properties.Size.Width
@@ -89,7 +85,7 @@ func (row Row) Draw(img *image.RGBA, window *glfw.Window) []Area {
 	}
 
 	for _, child := range row.Children {
-		areas = append(areas, child.Draw(img, window)...)
+		areas = append(areas, child.Draw(dl, in)...)
 	}
 
 	return areas

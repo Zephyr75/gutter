@@ -1,33 +1,20 @@
 package ui
 
 import (
-	"image"
 	"image/color"
-	"image/draw"
-
-	"github.com/go-gl/glfw/v3.3/glfw"
-
-	"github.com/Zephyr75/gutter/utils"
 )
 
-// The hover tint never changes, so it is built once instead of once per widget
-// per frame.
-var hoverTint = image.NewUniform(color.RGBA{0, 0, 0, 55})
+// hoverTint is the default translucent black hover used when no dedicated hover image is provided
+var hoverTint = color.NRGBA{0, 0, 0, 55}
 
-// solidFill is reused across Draw calls for background colours. draw.Draw reads
-// it synchronously and GLFW pins the whole UI to one thread, so a single shared
-// value is safe and saves an allocation per widget per redraw.
-var solidFill image.Uniform
-
-func MouseInBounds(window *glfw.Window, area Area) bool {
-	if window == nil {
-		return false
-	}
-	x, y := window.GetCursorPos()
-	return x > area.Left && x < area.Right && y > area.Top && y < area.Bottom
-}
-
-func Draw(img *image.RGBA, window *glfw.Window, element UIElement) Area {
+// Draw appends the commands for one widget. It writes no pixels: the host turns
+// each command into a quad.
+//
+// The second result reports whether the widget produced a clickable area at all.
+// Only a Button does, so callers append on ok rather than collecting a placeholder
+// for every widget in the tree -- the list the host hit-tests is then exactly the
+// list of things that can be hit.
+func Draw(dl *DrawList, in Input, element UIElement) (ClickArea, bool) {
 
 	props := element.GetProperties()
 
@@ -36,10 +23,9 @@ func Draw(img *image.RGBA, window *glfw.Window, element UIElement) Area {
 	centerX := props.Center.X
 	centerY := props.Center.Y
 
-	// A widget squeezed to nothing has no pixels and no clickable area, and
-	// resampling an image to zero is an error rather than a no-op
+	// A widget squeezed to nothing has no quad and no clickable area
 	if width <= 0 || height <= 0 {
-		return Area{}
+		return ClickArea{}, false
 	}
 
 	// Pull the style and the background images out of the concrete widget
@@ -62,53 +48,52 @@ func Draw(img *image.RGBA, window *glfw.Window, element UIElement) Area {
 		style, file = c.Style, c.Image
 	}
 
-	// Only a button reports a clickable area, and only a button reacts to hover
-	area := Area{}
+	// Only a button reports a clickable clickArea, and only a button reacts to hover
+	clickArea := ClickArea{}
+	clickable := false
 	hovered := false
 	if props.Type == UIButton {
-		area = Area{
+		clickArea = ClickArea{
 			Left:     float64(centerX - width/2),
 			Right:    float64(centerX + width/2),
 			Top:      float64(centerY - height/2),
 			Bottom:   float64(centerY + height/2),
 			Function: element.(Button).Function,
 		}
-		hovered = MouseInBounds(window, area)
+		clickable = true
+		hovered = MouseInBounds(in, clickArea)
 	}
 
-	// Decide which image is actually going to be drawn before loading anything,
-	// so a hovered button does not pay to resample the image it will not use
 	source := file
 	if hovered && hoverFile != "" {
 		source = hoverFile
 	}
 
-	var texture image.Image
+	rect := Rect{X: centerX - width/2, Y: centerY - height/2, W: width, H: height}
+
+	// An image is uploaded once at its native size and stretched over the quad
+	// by the sampler, so there is nothing to resample per widget
+	var tex *Texture
 	if source != "" {
-		// Cached: after the first frame at this size, a map lookup
-		if scaled, err := utils.GetScaledImage(source, width, height); err == nil {
-			texture = scaled
+		if t, err := imageTexture(source); err == nil {
+			tex = t
 		}
 		// On a missing or undecodable file, fall through to the background
-		// colour rather than handing a nil image to the resampler
-	}
-	if texture == nil {
-		solidFill.C = color.Color(color.RGBA{0, 0, 0, 0})
-		if style.Color != nil {
-			solidFill.C = style.Color
-		}
-		texture = &solidFill
+		// colour rather than emitting a command with no bitmap
 	}
 
-	rect := image.Rect(centerX-width/2, centerY-height/2, centerX+width/2, centerY+height/2)
-	draw.Draw(img, rect, texture, image.Point{}, draw.Over)
+	tint := white
+	if tex == nil {
+		tint = toNRGBA(style.Color)
+	}
+	dl.Add(rect, tint, tex)
 
 	// A hovered button with no dedicated hover image is darkened instead
 	if hovered && hoverFile == "" {
-		draw.Draw(img, rect, hoverTint, image.Point{}, draw.Over)
+		dl.Add(rect, hoverTint, nil)
 	}
 
-	return area
+	return clickArea, clickable
 }
 
 // ApplyLayout resolves a widget's geometry in the order the framework has

@@ -1,12 +1,5 @@
 package ui
 
-import (
-	"image"
-	_ "image/png"
-
-	"github.com/go-gl/glfw/v3.3/glfw"
-)
-
 type Container struct {
 	Properties Properties
 	Style      Style
@@ -14,37 +7,35 @@ type Container struct {
 	Image      string
 }
 
-func (container Container) Initialize(skip SkipAlignment) UIElement {
-	container.Properties = DefaultProperties(container.Properties, skip, UIContainer)
+func (container Container) Initialize(in Input, skip SkipAlignment) UIElement {
+	container.Properties = DefaultProperties(container.Properties, in, skip, UIContainer)
 	container.Style = DefaultStyle(container.Style)
 	return container
 }
 
-func (container Container) Draw(img *image.RGBA, window *glfw.Window) []Area {
+func (container Container) Draw(dl *DrawList, in Input) []ClickArea {
 
-	areas := []Area{}
+	areas := []ClickArea{}
 
 	if !container.Properties.Initialized {
-		container = container.Initialize(SkipAlignmentNone).(Container)
+		container = container.Initialize(in, SkipAlignmentNone).(Container)
 	}
 
 	container.Properties = ApplyLayout(container.Properties)
 
 	if container.Child != nil {
 		container.Child = container.Child.SetParent(&container.Properties)
-		container.Child = container.Child.Initialize(SkipAlignmentNone)
+		container.Child = container.Child.Initialize(in, SkipAlignmentNone)
 	}
 
-	// if b > 200 {
-	//   fmt.Println(button)
-	// }
-
-	areas = append(areas, Draw(img, window, container))
+	if area, ok := Draw(dl, in, container); ok {
+		areas = append(areas, area)
+	}
 
 	if container.Child != nil {
 		props := container.Child.GetProperties()
 		container.Child = container.Child.SetProperties(props.Size, container.Properties.Center)
-		areas = append(areas, container.Child.Draw(img, window)...)
+		areas = append(areas, container.Child.Draw(dl, in)...)
 	}
 
 	return areas

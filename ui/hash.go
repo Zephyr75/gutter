@@ -116,7 +116,7 @@ func (s StyleText) Hash(h *Hasher) {
 	h.Color(s.FontColor)
 }
 
-func (a Area) Hash(h *Hasher) {
+func (a ClickArea) Hash(h *Hasher) {
 	h.Uint64(uint64(int64(a.Top)))
 	h.Uint64(uint64(int64(a.Right)))
 	h.Uint64(uint64(int64(a.Bottom)))

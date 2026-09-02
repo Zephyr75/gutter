@@ -1,14 +1,7 @@
 package ui
 
 import (
-	// "fmt"
-	"image"
 	"image/color"
-	// "sync"
-
-	"github.com/go-gl/glfw/v3.3/glfw"
-
-	"github.com/Zephyr75/gutter/utils"
 	"strconv"
 )
 
@@ -99,14 +92,13 @@ func (s Size) ToString() string {
 }
 
 type UIElement interface {
-	Draw(img *image.RGBA, window *glfw.Window) []Area
+	Draw(dl *DrawList, in Input) []ClickArea
 	SetProperties(size Size, center Point) UIElement
 	GetProperties() Properties
-	Initialize(skip SkipAlignment) UIElement
+	Initialize(in Input, skip SkipAlignment) UIElement
 	SetParent(parent *Properties) UIElement
 	ToString() string
-	// Hash mixes everything that affects this widget's appearance into h. It is
-	// the allocation-free replacement for comparing ToString between frames.
+	// Hash mixes everything that affects this widget's appearance into h
 	Hash(h *Hasher)
 }
 
@@ -155,26 +147,30 @@ func (p Properties) ToString() string {
 	return p.Center.ToString() + ";" + p.Size.ToString() + ";" + p.Type.ToString()
 }
 
-func DefaultProperties(props Properties, skip SkipAlignment, uitype UIType) Properties {
+// DefaultProperties fills in what a widget did not declare. The viewport comes
+// from in rather than from package state: a widget with no size and no parent is
+// the root, and the root fills the window.
+func DefaultProperties(props Properties, in Input, skip SkipAlignment, uitype UIType) Properties {
+	vw, vh := in.viewport()
 	newSize := props.Size
 	if props.Size.Width == 0 && props.Size.Height == 0 {
 		newSize = Size{ScaleRelative, 100, 100}
 		if props.Parent == nil {
 			// fmt.Println("Parent is nil")
-			newSize = Size{ScalePixel, utils.RESOLUTION_X, utils.RESOLUTION_Y}
+			newSize = Size{ScalePixel, vw, vh}
 		}
 	}
 
 	newCenter := props.Center
 	if props.Center.X == 0 && props.Center.Y == 0 {
-		newCenter = Point{utils.RESOLUTION_X / 2, utils.RESOLUTION_Y / 2}
+		newCenter = Point{vw / 2, vh / 2}
 	}
 
 	newParent := props.Parent
 	if props.Parent == nil {
 		newParent = &Properties{
-			Center:      Point{utils.RESOLUTION_X / 2, utils.RESOLUTION_Y / 2},
-			Size:        Size{ScalePixel, utils.RESOLUTION_X, utils.RESOLUTION_Y},
+			Center:      Point{vw / 2, vh / 2},
+			Size:        Size{ScalePixel, vw, vh},
 			Alignment:   AlignmentCenter,
 			Padding:     PaddingEqual(ScalePixel, 0),
 			Parent:      nil,
@@ -250,7 +246,7 @@ func (p Point) ToString() string {
 	return strconv.Itoa(p.X) + "," + strconv.Itoa(p.Y)
 }
 
-type Area struct {
+type ClickArea struct {
 	Top      float64
 	Right    float64
 	Bottom   float64
@@ -258,6 +254,6 @@ type Area struct {
 	Function func()
 }
 
-func (a Area) ToString() string {
+func (a ClickArea) ToString() string {
 	return strconv.Itoa(int(a.Top)) + "," + strconv.Itoa(int(a.Right)) + "," + strconv.Itoa(int(a.Bottom)) + "," + strconv.Itoa(int(a.Left))
 }

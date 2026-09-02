@@ -2,10 +2,9 @@ package ui
 
 import (
 	"image"
+	"image/color"
 	"os"
 	"strings"
-
-	"github.com/go-gl/glfw/v3.3/glfw"
 
 	"github.com/goki/freetype"
 	"github.com/goki/freetype/truetype"
@@ -18,36 +17,39 @@ type Text struct {
 	Content string
 }
 
-func (text Text) Initialize(skip SkipAlignment) UIElement {
-	text.Properties = DefaultProperties(text.Properties, skip, UIText)
+func (text Text) Initialize(in Input, skip SkipAlignment) UIElement {
+	text.Properties = DefaultProperties(text.Properties, in, skip, UIText)
 	text.StyleText = DefaultStyleText(text.StyleText)
 	return text
 }
 
-func (text Text) Draw(img *image.RGBA, window *glfw.Window) []Area {
-
+func (text Text) Draw(dl *DrawList, in Input) []ClickArea {
 	if !text.Properties.Initialized {
-		text = text.Initialize(SkipAlignmentNone).(Text)
+		text = text.Initialize(in, SkipAlignmentNone).(Text)
 	}
 
 	text.Properties = ApplyLayout(text.Properties)
 
 	if text.Content == "" {
-		return []Area{}
+		return nil
 	}
 
 	props := text.Properties
-	rect := image.Rect(
-		props.Center.X-props.Size.Width/2,
-		props.Center.Y-props.Size.Height/2,
-		props.Center.X+props.Size.Width/2,
-		props.Center.Y+props.Size.Height/2,
-	)
+	tex := textTexture(text.Content, text.StyleText, props.Size.Width, props.Size.Height)
+	if tex == nil {
+		return nil
+	}
 
-	drawText(img, strings.Split(text.Content, "\n"), text.StyleText, rect)
+	// The bitmap is the text block itself, so it is placed rather than filled:
+	// against the widget's left edge, centred on its vertical axis.
+	dl.Add(Rect{
+		X: props.Center.X - props.Size.Width/2,
+		Y: props.Center.Y - tex.H/2,
+		W: tex.W,
+		H: tex.H,
+	}, toNRGBA(text.StyleText.FontColor), tex)
 
-	return []Area{}
-
+	return nil
 }
 
 func (text Text) SetProperties(size Size, center Point) UIElement {
@@ -98,10 +100,6 @@ type textContextKey struct {
 	size int
 }
 
-// textFill is reused for the glyph colour; the context reads it synchronously
-// during DrawString and the UI is single-threaded.
-var textFill image.Uniform
-
 func loadFont(path string) (*truetype.Font, error) {
 	if f, ok := parsedFonts[path]; ok {
 		return f, parsedFontErr[path]
@@ -144,30 +142,101 @@ func textContext(fontPath string, fontSize int) (*freetype.Context, error) {
 	return c, nil
 }
 
-// drawText lays the lines out inside rect: left-aligned, and the block as a
-// whole centred vertically. The clip is the widget's own box, so a string that
-// is too long is cut off rather than painted over its neighbours.
-func drawText(img *image.RGBA, lines []string, style StyleText, rect image.Rectangle) {
+// A rendered string is cached as a white bitmap whose alpha is the glyph
+// coverage, and coloured by the Cmd's tint. Colour is therefore not part of the
+// key: the same string at the same size is one texture however many colours it
+// is drawn in.
+type textKey struct {
+	content string
+	font    string
+	size    int
+	width   int
+	height  int
+}
+
+var (
+	textTextures = map[textKey]*Texture{}
+	measureDst   = image.NewNRGBA(image.Rect(0, 0, 1, 1))
+	whiteFill    = image.NewUniform(color.White)
+)
+
+// textBucket rounds a bitmap's width up so that a string which changes every
+// frame keeps producing the same byte size. Hosts that reallocate a texture
+// whenever its size changes -- and that leak a descriptor slot each time they do
+// -- would otherwise exhaust their slots within seconds on something as ordinary
+// as a frame counter.
+const textBucket = 64
+
+func textTexture(content string, style StyleText, maxWidth, maxHeight int) *Texture {
 	c, err := textContext(style.Font, style.FontSize)
 	if err != nil {
-		return
+		return nil
 	}
 
-	textFill.C = style.FontColor
-	c.SetDst(img)
-	c.SetSrc(&textFill)
-	c.SetClip(rect)
-
+	lines := strings.Split(content, "\n")
 	size := float64(style.FontSize)
 	lineHeight := int(c.PointToFixed(size*1.5) >> 6)
 	ascent := int(c.PointToFixed(size) >> 6)
 
-	top := rect.Min.Y + (rect.Dy()-lineHeight*len(lines))/2
-	pt := freetype.Pt(rect.Min.X, top+ascent)
-	for _, s := range lines {
-		if _, err := c.DrawString(s, pt); err != nil {
-			return
+	// Measuring is DrawString against an empty clip: every glyph still advances
+	// the pen, none of them is painted.
+	c.SetDst(measureDst)
+	c.SetSrc(whiteFill)
+	c.SetClip(image.Rectangle{})
+	natural := 0
+	for _, line := range lines {
+		p, err := c.DrawString(line, freetype.Pt(0, 0))
+		if err != nil {
+			return nil
+		}
+		if w := int(p.X >> 6); w > natural {
+			natural = w
+		}
+	}
+
+	width := roundUpTo(clampAbove(min(natural, maxWidth), 1), textBucket)
+	height := clampAbove(min(lineHeight*len(lines), maxHeight), 1)
+
+	key := textKey{content, style.Font, style.FontSize, width, height}
+	if tex, ok := textTextures[key]; ok {
+		return tex
+	}
+
+	pix := image.NewNRGBA(image.Rect(0, 0, width, height))
+	c.SetDst(pix)
+	c.SetSrc(whiteFill)
+	// The clip is the bitmap, so a string wider than its widget is cut off here
+	// rather than painted over its neighbours
+	c.SetClip(pix.Bounds())
+
+	pt := freetype.Pt(0, ascent)
+	for _, line := range lines {
+		if _, err := c.DrawString(line, pt); err != nil {
+			return nil
 		}
 		pt.Y += c.PointToFixed(size * 1.5)
 	}
+
+	h := NewHasher()
+	h.String("text")
+	h.String(content)
+	h.String(style.Font)
+	h.Int(style.FontSize)
+	h.Int(width)
+	h.Int(height)
+
+	tex := &Texture{Key: h.Sum(), Pixels: pix, W: width, H: height}
+	textTextures[key] = tex
+	return tex
+}
+
+func roundUpTo(v, multiple int) int {
+	return ((v + multiple - 1) / multiple) * multiple
+}
+
+func clampAbove(v, low int) int {
+	if v < low {
+		return low
+	}
+	return v
 }
