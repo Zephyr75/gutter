@@ -168,18 +168,25 @@ var (
 const textBucket = 64
 
 func textTexture(content string, style StyleText, maxWidth, maxHeight int) *Texture {
+	// Obtain or create a freetype.Context for the requested font and size.
 	c, err := textContext(style.Font, style.FontSize)
 	if err != nil {
 		return nil
 	}
 
+	// Split content into separate lines to handle multiline strings.
 	lines := strings.Split(content, "\n")
-	size := float64(style.FontSize)
-	lineHeight := int(c.PointToFixed(size*1.5) >> 6)
-	ascent := int(c.PointToFixed(size) >> 6)
 
-	// Measuring is DrawString against an empty clip: every glyph still advances
-	// the pen, none of them is painted.
+	// Helper values derived from the font size.
+	size := float64(style.FontSize)
+	lineHeight := int(c.PointToFixed(size*1.5) >> 6) // approximate line spacing
+	ascent := int(c.PointToFixed(size) >> 6)         // distance above baseline
+
+	// ------------------------------------------------------------
+	// Measure phase: compute the maximum width needed by the string.
+	// We render onto a dummy surface with an empty clip so no pixels are drawn,
+	// but the pen position still advances as if drawing were performed.
+	// ------------------------------------------------------------
 	c.SetDst(measureDst)
 	c.SetSrc(whiteFill)
 	c.SetClip(image.Rectangle{})
@@ -189,34 +196,40 @@ func textTexture(content string, style StyleText, maxWidth, maxHeight int) *Text
 		if err != nil {
 			return nil
 		}
+		// Convert the fixed-point X position to integer width.
 		if w := int(p.X >> 6); w > natural {
 			natural = w
 		}
 	}
 
+	// Clamp and bucketize the measured width; this guarantees a stable texture size across frames.
 	width := roundUpTo(clampAbove(min(natural, maxWidth), 1), textBucket)
 	height := clampAbove(min(lineHeight*len(lines), maxHeight), 1)
 
+	// Check if we already have a cached texture for these parameters.
 	key := textKey{content, style.Font, style.FontSize, width, height}
 	if tex, ok := textTextures[key]; ok {
 		return tex
 	}
 
+	// ------------------------------------------------------------
+	// Rendering phase: create a real image and draw the string onto it.
+	// ------------------------------------------------------------
 	pix := image.NewNRGBA(image.Rect(0, 0, width, height))
 	c.SetDst(pix)
 	c.SetSrc(whiteFill)
-	// The clip is the bitmap, so a string wider than its widget is cut off here
-	// rather than painted over its neighbours
-	c.SetClip(pix.Bounds())
+	c.SetClip(pix.Bounds()) // clip to avoid drawing outside the texture
 
-	pt := freetype.Pt(0, ascent)
+	pt := freetype.Pt(0, ascent) // start at baseline
 	for _, line := range lines {
 		if _, err := c.DrawString(line, pt); err != nil {
 			return nil
 		}
+		// Move down by one line height (scaled appropriately).
 		pt.Y += c.PointToFixed(size * 1.5)
 	}
 
+	// Create a hash key that uniquely identifies this texture's content and size.
 	h := NewHasher()
 	h.String("text")
 	h.String(content)
