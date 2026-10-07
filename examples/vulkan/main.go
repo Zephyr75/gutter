@@ -37,25 +37,25 @@ func main() {
 
 	// One DrawList, reused. Reset keeps the backing array, so after the first
 	// few frames the list itself stops allocating.
-	var dl ui.DrawList
+	var drawList ui.DrawList
 	quads := 0
 
 	for !host.ShouldClose() {
 		host.Poll()
-		in := host.Input()
+		input := host.Input()
 
-		dl.Reset()
+		drawList.Reset()
 		// No explicit Initialize: Draw does it, and it does it *after* reading
 		// the viewport out of Input. Initialising first would size the root from
 		// a stale viewport, which on the very first frame is gutter's default.
-		areas := MainWindow(host, quads).Draw(&dl, in)
+		areas := MainWindow(host, quads).Draw(&drawList, input)
 
 		// Areas come back in paint order, so the last one under the cursor is
 		// the one on top. Firing on the press edge means a held button acts once.
 		if host.Clicked() {
 			for i := len(areas) - 1; i >= 0; i-- {
 				a := areas[i]
-				if a.Function != nil && ui.MouseInBounds(in, a) {
+				if a.Function != nil && ui.MouseInBounds(input, a) {
 					a.Function()
 					break
 				}
@@ -66,9 +66,9 @@ func main() {
 		// which changes every frame is a new string, hence a new cached bitmap
 		// and a new texture, every frame -- the one thing a host with a fixed
 		// pool of descriptor slots cannot survive.
-		quads = len(dl.Cmds)
+		quads = len(drawList.Cmds)
 
-		host.Render(&dl)
+		host.Render(&drawList)
 	}
 }
 

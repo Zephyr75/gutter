@@ -7,35 +7,35 @@ type Container struct {
 	Image      string
 }
 
-func (container Container) Initialize(in Input, skip SkipAlignment) UIElement {
-	container.Properties = DefaultProperties(container.Properties, in, skip, UIContainer)
+func (container Container) Initialize(input Input, skip SkipAlignment) UIElement {
+	container.Properties = DefaultProperties(container.Properties, input, skip, UIContainer)
 	container.Style = DefaultStyle(container.Style)
 	return container
 }
 
-func (container Container) Draw(dl *DrawList, in Input) []ClickArea {
+func (container Container) Draw(drawList *DrawList, input Input) []ClickArea {
 
 	areas := []ClickArea{}
 
 	if !container.Properties.Initialized {
-		container = container.Initialize(in, SkipAlignmentNone).(Container)
+		container = container.Initialize(input, SkipAlignmentNone).(Container)
 	}
 
 	container.Properties = ApplyLayout(container.Properties)
 
 	if container.Child != nil {
 		container.Child = container.Child.SetParent(&container.Properties)
-		container.Child = container.Child.Initialize(in, SkipAlignmentNone)
+		container.Child = container.Child.Initialize(input, SkipAlignmentNone)
 	}
 
-	if area, ok := Draw(dl, in, container); ok {
+	if area, ok := Draw(drawList, input, container); ok {
 		areas = append(areas, area)
 	}
 
 	if container.Child != nil {
 		props := container.Child.GetProperties()
 		container.Child = container.Child.SetProperties(props.Size, container.Properties.Center)
-		areas = append(areas, container.Child.Draw(dl, in)...)
+		areas = append(areas, container.Child.Draw(drawList, input)...)
 	}
 
 	return areas

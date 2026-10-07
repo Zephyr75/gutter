@@ -7,28 +7,28 @@ type Column struct {
 	Image      string
 }
 
-func (column Column) Initialize(in Input, skip SkipAlignment) UIElement {
-	column.Properties = DefaultProperties(column.Properties, in, skip, UIColumn)
+func (column Column) Initialize(input Input, skip SkipAlignment) UIElement {
+	column.Properties = DefaultProperties(column.Properties, input, skip, UIColumn)
 	column.Style = DefaultStyle(column.Style)
 	return column
 }
 
-func (column Column) Draw(dl *DrawList, in Input) []ClickArea {
+func (column Column) Draw(drawList *DrawList, input Input) []ClickArea {
 
 	areas := []ClickArea{}
 
 	if !column.Properties.Initialized {
-		column = column.Initialize(in, SkipAlignmentNone).(Column)
+		column = column.Initialize(input, SkipAlignmentNone).(Column)
 	}
 
 	column.Properties = ApplyLayout(column.Properties)
 
 	for i, child := range column.Children {
 		child = child.SetParent(&column.Properties)
-		column.Children[i] = child.Initialize(in, SkipAlignmentVert)
+		column.Children[i] = child.Initialize(input, SkipAlignmentVert)
 	}
 
-	if area, ok := Draw(dl, in, column); ok {
+	if area, ok := Draw(drawList, input, column); ok {
 		areas = append(areas, area)
 	}
 
@@ -85,7 +85,7 @@ func (column Column) Draw(dl *DrawList, in Input) []ClickArea {
 	}
 
 	for _, child := range column.Children {
-		areas = append(areas, child.Draw(dl, in)...)
+		areas = append(areas, child.Draw(drawList, input)...)
 	}
 
 	return areas

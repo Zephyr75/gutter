@@ -7,28 +7,28 @@ type Row struct {
 	Image      string
 }
 
-func (row Row) Initialize(in Input, skip SkipAlignment) UIElement {
-	row.Properties = DefaultProperties(row.Properties, in, skip, UIRow)
+func (row Row) Initialize(input Input, skip SkipAlignment) UIElement {
+	row.Properties = DefaultProperties(row.Properties, input, skip, UIRow)
 	row.Style = DefaultStyle(row.Style)
 	return row
 }
 
-func (row Row) Draw(dl *DrawList, in Input) []ClickArea {
+func (row Row) Draw(drawList *DrawList, input Input) []ClickArea {
 
 	areas := []ClickArea{}
 
 	if !row.Properties.Initialized {
-		row = row.Initialize(in, SkipAlignmentNone).(Row)
+		row = row.Initialize(input, SkipAlignmentNone).(Row)
 	}
 
 	row.Properties = ApplyLayout(row.Properties)
 
 	for i, child := range row.Children {
 		child = child.SetParent(&row.Properties)
-		row.Children[i] = child.Initialize(in, SkipAlignmentHoriz)
+		row.Children[i] = child.Initialize(input, SkipAlignmentHoriz)
 	}
 
-	if area, ok := Draw(dl, in, row); ok {
+	if area, ok := Draw(drawList, input, row); ok {
 		areas = append(areas, area)
 	}
 
@@ -85,7 +85,7 @@ func (row Row) Draw(dl *DrawList, in Input) []ClickArea {
 	}
 
 	for _, child := range row.Children {
-		areas = append(areas, child.Draw(dl, in)...)
+		areas = append(areas, child.Draw(drawList, input)...)
 	}
 
 	return areas
