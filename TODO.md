@@ -24,10 +24,22 @@
   `examples/vulkan` — widget tree plus a Vulkan host, its own Go module so
   gutter's `go.mod` stays free of GLFW and Vulkan.
 
+- [x] **Track go-vulkan's API change**
+  Barriers go through `vk.DependencyInfo{Image: ...}`. go-vulkan had removed
+  `GetPhysicalDeviceSurfaceFormatsKHR` as unused, so it was restored there for
+  `pickFormat`. go-vulkan's `BINDINGS_OVERDRIVE_GUTTER.md` now records which of
+  the two callers needs each binding.
+
+- [x] **Docs match the code**
+  README no longer points at unexported helpers or miscounts the interface.
+  `OVERVIEW.md` walks through the library and the example.
+
 ## Open
 
 - [ ] **Wire overdrive to the draw list**
-  Only `core/ui.go` and `ui.slang`. Unit quad `(0,0)..(1,1)` instead of a
+  Overdrive still pins gutter `v0.1.2` and the old `ui.Area` /
+  window-in-`Draw` API, so it needs a new gutter tag first. Then only
+  `core/ui.go` and `ui.slang`. Unit quad `(0,0)..(1,1)` instead of a
   clip-space fullscreen one; per `Cmd` look up `cache[Tex.Key]`, build a `Model`
   onto `Cmd.Rect`, set the tint, one `Draw` each. `DrawUniforms` is size-locked,
   so reuse `MatDiffuse` + `MatMetallic` for the tint rather than adding a field.
@@ -48,6 +60,8 @@
 - [ ] **Clip rects, UV rects, corner radius, border width in `Cmd`**
   Each is addable without changing `Cmd`'s shape. Only text is clipped today,
   and that happens during rasterisation; everything else can overflow its parent.
+  Text clips to its *bucketed* width, so a string longer than its box can spill
+  up to 63 px past the box's right edge.
 
 - [ ] **Replace the `UIType` type switch**
   `ui/draw.go` switches on `props.Type` and type-asserts back to the concrete
@@ -61,7 +75,12 @@
 - [ ] **Clean up**
   Deprecated `ApplyPadding`/`ApplyAlignment`/`ApplyRelative` wrappers; `ToString`
   methods superseded by `Hash`; `textKey` and the `Hasher` sum encode the same
-  five fields twice; fully transparent `Cmd`s still cost the host a draw call.
+  five fields twice; fully transparent `Cmd`s still cost the host a draw call;
+  `UIImage` has no widget behind it (images are a field on the other widgets).
+
+- [ ] **`StyleText` defaults to font `"Arial"`**
+  `Font` is a file path, so the default never loads and an unstyled `Text` draws
+  nothing, silently. Either embed a fallback font or make a missing font loud.
 
 - [ ] **`textTexture` measures on every frame, even on a cache hit**
   The cache key holds the *measured* width, so the measure pass — a `DrawString`

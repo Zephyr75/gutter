@@ -14,7 +14,7 @@ var hoverTint = color.NRGBA{0, 0, 0, 55}
 // Only a Button does, so callers append on ok rather than collecting a placeholder
 // for every widget in the tree -- the list the host hit-tests is then exactly the
 // list of things that can be hit.
-func Draw(dl *DrawList, in Input, element UIElement) (ClickArea, bool) {
+func Draw(drawList *DrawList, input Input, element UIElement) (ClickArea, bool) {
 
 	props := element.GetProperties()
 
@@ -61,7 +61,7 @@ func Draw(dl *DrawList, in Input, element UIElement) (ClickArea, bool) {
 			Function: element.(Button).Function,
 		}
 		clickable = true
-		hovered = MouseInBounds(in, clickArea)
+		hovered = MouseInBounds(input, clickArea)
 	}
 
 	source := file
@@ -73,24 +73,25 @@ func Draw(dl *DrawList, in Input, element UIElement) (ClickArea, bool) {
 
 	// An image is uploaded once at its native size and stretched over the quad
 	// by the sampler, so there is nothing to resample per widget
-	var tex *Texture
+	var texture *Texture
 	if source != "" {
-		if t, err := imageTexture(source); err == nil {
-			tex = t
+		tex, err := imageTexture(source)
+	 	if err == nil {
+			texture = tex
 		}
 		// On a missing or undecodable file, fall through to the background
 		// colour rather than emitting a command with no bitmap
 	}
 
 	tint := white
-	if tex == nil {
+	if texture == nil {
 		tint = toNRGBA(style.Color)
 	}
-	dl.Add(rect, tint, tex)
+	drawList.Add(rect, tint, texture)
 
 	// A hovered button with no dedicated hover image is darkened instead
 	if hovered && hoverFile == "" {
-		dl.Add(rect, hoverTint, nil)
+		drawList.Add(rect, hoverTint, nil)
 	}
 
 	return clickArea, clickable

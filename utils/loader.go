@@ -15,7 +15,7 @@ import (
 // changes size.
 
 var (
-	mu sync.Mutex
+	mutex sync.Mutex
 
 	decoded    = map[string]image.Image{}
 	decodedErr = map[string]error{}
@@ -25,8 +25,8 @@ var (
 // the first attempt if it has been decoded before. Failures are cached too, so
 // a missing asset costs one failed open rather than one per frame.
 func GetImageFromFilePath(filePath string) (image.Image, error) {
-	mu.Lock()
-	defer mu.Unlock()
+	mutex.Lock()
+	defer mutex.Unlock()
 
 	if img, ok := decoded[filePath]; ok {
 		return img, decodedErr[filePath]
@@ -47,8 +47,8 @@ func GetImageFromFilePath(filePath string) (image.Image, error) {
 // ClearImageCache drops every cached decode. Only useful for tests and for
 // reloading assets that changed on disk.
 func ClearImageCache() {
-	mu.Lock()
-	defer mu.Unlock()
+	mutex.Lock()
+	defer mutex.Unlock()
 	decoded = map[string]image.Image{}
 	decodedErr = map[string]error{}
 }

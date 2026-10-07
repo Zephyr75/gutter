@@ -414,24 +414,24 @@ func (h *Host) upload(t *ui.Texture) *hostTexture {
 	vk.MemCopy(stagingInfo.MappedData, pix)
 
 	h.oneShot(func(cb vk.CommandBuffer) {
-		vk.CmdPipelineBarrier2(cb, []vk.ImageMemoryBarrier2{{
+		vk.CmdPipelineBarrier2(cb, vk.DependencyInfo{Image: []vk.ImageMemoryBarrier2{{
 			SrcStageMask: vk.PipelineStage2None, SrcAccessMask: vk.Access2None,
 			DstStageMask: vk.PipelineStage2Transfer, DstAccessMask: vk.Access2TransferWrite,
 			OldLayout: vk.ImageLayoutUndefined, NewLayout: vk.ImageLayoutTransferDstOptimal,
 			SrcQueueFamilyIndex: vk.QueueFamilyIgnored, DstQueueFamilyIndex: vk.QueueFamilyIgnored,
 			Image: ht.image, SubresourceRange: colorRange,
-		}})
+		}}})
 		vk.CmdCopyBufferToImage(cb, staging, ht.image, vk.ImageLayoutTransferDstOptimal, []vk.BufferImageCopy{{
 			AspectMask: vk.ImageAspectColor, LayerCount: 1,
 			ImageExtent: vk.Extent3D{Width: uint32(t.W), Height: uint32(t.H), Depth: 1},
 		}})
-		vk.CmdPipelineBarrier2(cb, []vk.ImageMemoryBarrier2{{
+		vk.CmdPipelineBarrier2(cb, vk.DependencyInfo{Image: []vk.ImageMemoryBarrier2{{
 			SrcStageMask: vk.PipelineStage2Transfer, SrcAccessMask: vk.Access2TransferWrite,
 			DstStageMask: vk.PipelineStage2FragmentShader, DstAccessMask: vk.Access2ShaderRead,
 			OldLayout: vk.ImageLayoutTransferDstOptimal, NewLayout: vk.ImageLayoutShaderReadOnlyOptimal,
 			SrcQueueFamilyIndex: vk.QueueFamilyIgnored, DstQueueFamilyIndex: vk.QueueFamilyIgnored,
 			Image: ht.image, SubresourceRange: colorRange,
-		}})
+		}}})
 	})
 	h.allocator.VmaDestroyBuffer(staging, stagingAlloc)
 
@@ -528,13 +528,13 @@ func (h *Host) Render(dl *ui.DrawList) {
 	chk(vk.ResetCommandBuffer(cb))
 	chk(vk.BeginCommandBuffer(cb, vk.CommandBufferUsageOneTimeSubmit))
 
-	vk.CmdPipelineBarrier2(cb, []vk.ImageMemoryBarrier2{{
+	vk.CmdPipelineBarrier2(cb, vk.DependencyInfo{Image: []vk.ImageMemoryBarrier2{{
 		SrcStageMask: vk.PipelineStage2ColorAttachmentOutput, SrcAccessMask: vk.Access2None,
 		DstStageMask: vk.PipelineStage2ColorAttachmentOutput, DstAccessMask: vk.Access2ColorAttachmentWrite,
 		OldLayout: vk.ImageLayoutUndefined, NewLayout: vk.ImageLayoutColorAttachmentOptimal,
 		SrcQueueFamilyIndex: vk.QueueFamilyIgnored, DstQueueFamilyIndex: vk.QueueFamilyIgnored,
 		Image: h.images[imageIndex], SubresourceRange: colorRange,
-	}})
+	}}})
 
 	vk.CmdBeginRendering(cb, vk.RenderingInfo{
 		RenderArea: vk.Rect2D{Extent: h.extent},
@@ -576,13 +576,13 @@ func (h *Host) Render(dl *ui.DrawList) {
 
 	vk.CmdEndRendering(cb)
 
-	vk.CmdPipelineBarrier2(cb, []vk.ImageMemoryBarrier2{{
+	vk.CmdPipelineBarrier2(cb, vk.DependencyInfo{Image: []vk.ImageMemoryBarrier2{{
 		SrcStageMask: vk.PipelineStage2ColorAttachmentOutput, SrcAccessMask: vk.Access2ColorAttachmentWrite,
 		DstStageMask: vk.PipelineStage2ColorAttachmentOutput, DstAccessMask: vk.Access2None,
 		OldLayout: vk.ImageLayoutColorAttachmentOptimal, NewLayout: vk.ImageLayoutPresentSrcKHR,
 		SrcQueueFamilyIndex: vk.QueueFamilyIgnored, DstQueueFamilyIndex: vk.QueueFamilyIgnored,
 		Image: h.images[imageIndex], SubresourceRange: colorRange,
-	}})
+	}}})
 	chk(vk.EndCommandBuffer(cb))
 
 	chk(vk.QueueSubmit2(h.queue, []vk.SubmitInfo2{{

@@ -18,7 +18,7 @@ host.Render(&dl)                                          // geometry -> quads
 ```
 
 `Draw` appends one `ui.Cmd` per rect to the list and returns the clickable
-`[]ui.Area`. gutter writes no pixels and imports no graphics API; the host never
+`[]ui.ClickArea`. gutter writes no pixels and imports no graphics API; the host never
 mentions a widget.
 
 ## What the host does with a Cmd

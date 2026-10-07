@@ -21,7 +21,7 @@ func (in Input) viewport() (int, int) {
 	return defaultViewportW, defaultViewportH
 }
 
-func MouseInBounds(in Input, area ClickArea) bool {
-	return in.CursorX > area.Left && in.CursorX < area.Right &&
-		in.CursorY > area.Top && in.CursorY < area.Bottom
+func MouseInBounds(input Input, area ClickArea) bool {
+	return input.CursorX > area.Left && input.CursorX < area.Right &&
+		input.CursorY > area.Top && input.CursorY < area.Bottom
 }
