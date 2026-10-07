@@ -22,9 +22,10 @@ func (container Container) Draw(drawList *DrawList, input Input) []ClickArea {
 	}
 
 	container.Properties = ApplyLayout(container.Properties)
+	content := ContentBox(container.Properties)
 
 	if container.Child != nil {
-		container.Child = container.Child.SetParent(&container.Properties)
+		container.Child = container.Child.SetParent(&content)
 		container.Child = container.Child.Initialize(input, SkipAlignmentNone)
 	}
 
@@ -34,7 +35,7 @@ func (container Container) Draw(drawList *DrawList, input Input) []ClickArea {
 
 	if container.Child != nil {
 		props := container.Child.GetProperties()
-		container.Child = container.Child.SetProperties(props.Size, container.Properties.Center)
+		container.Child = container.Child.SetProperties(props.Size, content.Center)
 		areas = append(areas, container.Child.Draw(drawList, input)...)
 	}
 

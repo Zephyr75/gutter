@@ -24,9 +24,10 @@ func (button Button) Draw(drawList *DrawList, input Input) []ClickArea {
 	}
 
 	button.Properties = ApplyLayout(button.Properties)
+	content := ContentBox(button.Properties)
 
 	if button.Child != nil {
-		button.Child = button.Child.SetParent(&button.Properties)
+		button.Child = button.Child.SetParent(&content)
 		button.Child = button.Child.Initialize(input, SkipAlignmentNone)
 	}
 
@@ -36,7 +37,7 @@ func (button Button) Draw(drawList *DrawList, input Input) []ClickArea {
 
 	if button.Child != nil {
 		props := button.Child.GetProperties()
-		button.Child = button.Child.SetProperties(props.Size, button.Properties.Center)
+		button.Child = button.Child.SetProperties(props.Size, content.Center)
 		areas = append(areas, button.Child.Draw(drawList, input)...)
 	}
 

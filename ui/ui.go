@@ -13,9 +13,9 @@ const (
 )
 
 /*
-Padding
+Spacing
 */
-type Padding struct {
+type Spacing struct {
 	Scale  ScaleType
 	Top    int
 	Right  int
@@ -23,8 +23,8 @@ type Padding struct {
 	Left   int
 }
 
-func PaddingEqual(scale ScaleType, padding int) Padding {
-	return Padding{
+func PaddingEqual(scale ScaleType, padding int) Spacing {
+	return Spacing{
 		Scale:  scale,
 		Top:    padding,
 		Right:  padding,
@@ -32,8 +32,8 @@ func PaddingEqual(scale ScaleType, padding int) Padding {
 		Left:   padding,
 	}
 }
-func PaddingSymmetric(scale ScaleType, vertical, horizontal int) Padding {
-	return Padding{
+func PaddingSymmetric(scale ScaleType, vertical, horizontal int) Spacing {
+	return Spacing{
 		Scale:  scale,
 		Top:    vertical,
 		Right:  horizontal,
@@ -41,8 +41,8 @@ func PaddingSymmetric(scale ScaleType, vertical, horizontal int) Padding {
 		Left:   horizontal,
 	}
 }
-func PaddingSideBySide(scale ScaleType, top, right, bottom, left int) Padding {
-	return Padding{
+func PaddingSideBySide(scale ScaleType, top, right, bottom, left int) Spacing {
+	return Spacing{
 		Scale:  scale,
 		Top:    top,
 		Right:  right,
@@ -132,11 +132,16 @@ func (u UIType) ToString() string {
 	}
 }
 
+// Properties is a widget's layout. Margin is empty space outside the widget: it
+// is taken from the parent's space before the widget is sized, so in a Row or
+// Column the siblings share what is left. Padding is space inside it: the
+// background and click area keep the full rect, only the children are inset.
 type Properties struct {
 	Center      Point
 	Size        Size
 	Alignment   Alignment
-	Padding     Padding
+	Margin      Spacing
+	Padding     Spacing
 	Parent      *Properties
 	Initialized bool
 	Skip        SkipAlignment
@@ -184,6 +189,7 @@ func DefaultProperties(props Properties, in Input, skip SkipAlignment, uitype UI
 		Center:      newCenter,
 		Size:        newSize,
 		Alignment:   props.Alignment,
+		Margin:      props.Margin,
 		Padding:     props.Padding,
 		Parent:      newParent,
 		Initialized: true,

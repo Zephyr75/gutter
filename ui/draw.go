@@ -97,37 +97,38 @@ func Draw(drawList *DrawList, input Input, element UIElement) (ClickArea, bool) 
 	return clickArea, clickable
 }
 
-// ApplyLayout resolves a widget's geometry in the order the framework has
-// always used: relative sizes against the parent, then alignment within the
-// parent, then padding inside the result.
-//
-// It works on Properties rather than on UIElement. The three UIElement-shaped
-// functions below each re-boxed the widget into an interface and copied the
-// struct, so every widget paid three copies and three interface allocations per
-// frame to compute this; going through Properties costs none.
+// ApplyLayout resolves the widget's own rect: the margin is taken off the
+// parent's box, then the widget is sized and aligned in what is left
 func ApplyLayout(props Properties) Properties {
-	p := applyRelative(props)
-	p = applyAlignment(p)
-	return applyPadding(p)
+	if props.Parent == nil {
+		props.Size.Scale = ScalePixel
+		return props
+	}
+	area := inset(*props.Parent, props.Margin)
+	p := applyRelative(props, area)
+	return applyAlignment(p, area)
 }
 
-func applyRelative(p Properties) Properties {
+// ContentBox is the rect a widget's children are laid out in: the widget's
+// resolved rect (from ApplyLayout) with its padding taken off.
+func ContentBox(props Properties) Properties {
+	return inset(props, props.Padding)
+}
+
+// applyRelative and applyAlignment take the box to lay out in explicitly: it is
+// the parent's box minus the widget's margin, not the parent itself
+func applyRelative(p Properties, parent Properties) Properties {
 	newWidth := p.Size.Width
 	newHeight := p.Size.Height
-	if p.Size.Scale == ScaleRelative && p.Parent != nil {
-		newWidth = p.Parent.Size.Width * p.Size.Width / 100
-		newHeight = p.Parent.Size.Height * p.Size.Height / 100
+	if p.Size.Scale == ScaleRelative {
+		newWidth = parent.Size.Width * p.Size.Width / 100
+		newHeight = parent.Size.Height * p.Size.Height / 100
 	}
 	p.Size = Size{ScalePixel, newWidth, newHeight}
 	return p
 }
 
-func applyAlignment(p Properties) Properties {
-	parent := p.Parent
-	if parent == nil {
-		return p
-	}
-
+func applyAlignment(p Properties, parent Properties) Properties {
 	newX := p.Center.X
 	newY := p.Center.Y
 
@@ -170,40 +171,21 @@ func applyAlignment(p Properties) Properties {
 	return p
 }
 
-func applyPadding(p Properties) Properties {
-	oldWidth := p.Size.Width
-	oldHeight := p.Size.Height
-
-	horizPadding := p.Padding.Left + p.Padding.Right
-	vertPadding := p.Padding.Top + p.Padding.Bottom
-	horizOffset := p.Padding.Left - p.Padding.Right
-	vertOffset := p.Padding.Top - p.Padding.Bottom
-	if p.Padding.Scale == ScaleRelative {
-		horizPadding = oldWidth * horizPadding / 100
-		vertPadding = oldHeight * vertPadding / 100
-		horizOffset = oldWidth * horizOffset / 100
-		vertOffset = oldHeight * vertOffset / 100
-	}
-
-	p.Size = Size{ScalePixel, oldWidth - horizPadding, oldHeight - vertPadding}
-	p.Center = Point{p.Center.X + horizOffset/2, p.Center.Y + vertOffset/2}
+// inset shrinks p's rect by s on each side: a widget's own rect by its
+// padding, or its parent's box by its margin
+func inset(p Properties, spacing Spacing) Properties {
+	top, right, bottom, left := pixels(spacing, p.Size.Width, p.Size.Height)
+	p.Size = Size{ScalePixel, p.Size.Width - left - right, p.Size.Height - top - bottom}
+	p.Center = Point{p.Center.X + (left-right)/2, p.Center.Y + (top-bottom)/2}
 	return p
 }
 
-// Deprecated: use ApplyLayout. Kept so existing callers keep compiling.
-func ApplyPadding(element UIElement) UIElement {
-	p := applyPadding(element.GetProperties())
-	return element.SetProperties(p.Size, p.Center)
-}
-
-// Deprecated: use ApplyLayout. Kept so existing callers keep compiling.
-func ApplyAlignment(element UIElement) UIElement {
-	p := applyAlignment(element.GetProperties())
-	return element.SetProperties(p.Size, p.Center)
-}
-
-// Deprecated: use ApplyLayout. Kept so existing callers keep compiling.
-func ApplyRelative(element UIElement) UIElement {
-	p := applyRelative(element.GetProperties())
-	return element.SetProperties(p.Size, p.Center)
+// pixels resolves s to pixels. A relative side is a percentage of the box it
+// is taken from: width for left and right, height for top and bottom.
+func pixels(spacing Spacing, width, height int) (top, right, bottom, left int) {
+	if spacing.Scale == ScaleRelative {
+		return height * spacing.Top / 100, width * spacing.Right / 100,
+			height * spacing.Bottom / 100, width * spacing.Left / 100
+	}
+	return spacing.Top, spacing.Right, spacing.Bottom, spacing.Left
 }

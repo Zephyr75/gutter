@@ -1,7 +1,7 @@
 # Gutter
 A **Flutter‑style declarative UI framework** written in Go that renders through a *draw list*.
 
-> The library is small (~1.4 k lines of pure Go, one dependency: freetype) and supports absolute/relative sizing, alignment, padding, image sprites, hover and text rendering. It writes no pixels and imports no graphics API: it produces a flat list of quads that any host (Vulkan, OpenGL, SDL, …) can draw. `examples/vulkan` shows the whole pipeline.
+> The library is small (~1.4 k lines of pure Go, one dependency: freetype) and supports absolute/relative sizing, alignment, margin and padding, image sprites, hover and text rendering. It writes no pixels and imports no graphics API: it produces a flat list of quads that any host (Vulkan, OpenGL, SDL, …) can draw. `examples/vulkan` shows the whole pipeline.
 
 For a walkthrough of how it works, the main functions, and how the example uses them, read [`OVERVIEW.md`](OVERVIEW.md).
 
@@ -12,7 +12,7 @@ For a walkthrough of how it works, the main functions, and how the example uses 
 UITree ──► Layout Engine ──► DrawList + []ClickArea ──► Host Rendering Pipeline
 ```
 * **UITree** – Your code declares widgets as plain Go structs that implement `ui.UIElement`, and rebuilds the tree every frame. No reflection, no code generation.
-* **Layout Engine** (`ApplyLayout` = relative sizing → alignment → padding, plus the child distribution in `Row`/`Column`) resolves relative sizes and alignment into absolute pixel coordinates. It runs once per frame for the whole tree, as part of `Draw`.
+* **Layout Engine** (`ApplyLayout` = margin taken from the parent's box → relative sizing → alignment, then `ContentBox` = padding for the children, plus the child distribution in `Row`/`Column`) resolves relative sizes and alignment into absolute pixel coordinates. It runs once per frame for the whole tree, as part of `Draw`.
 * **DrawList** – Each widget appends zero or more `ui.Cmd`s (rect, straight‑alpha colour, optional texture). The host turns each into one alpha-blended quad, in list order.
 * **ClickArea** – `Draw` also returns the rects of every `Button`, with its callback. The host hit-tests them against the cursor.
 
@@ -37,7 +37,7 @@ The package exports a small set of types and helper functions. The table below s
 |------|---------|-------------|
 | `UIElement` | Interface that every widget implements | `Draw`, `Initialize`, `SetParent`, `SetProperties`, `GetProperties`, `Hash`, `ToString` |
 | `Row`, `Column`, `Container`, `Button`, `Text` | Concrete widgets | Constructed as plain structs (see examples). |
-| `Properties`, `Size`, `Padding`, `Alignment`, `Point` | Layout | `ScaleRelative` / `ScalePixel` for sizes, `PaddingEqual`, `PaddingSymmetric`, `PaddingSideBySide` |
+| `Properties`, `Size`, `Padding`, `Alignment`, `Point` | Layout | `ScaleRelative` / `ScalePixel` for sizes; `Margin` (space outside, taken from the parent) and `Padding` (space inside) both take `PaddingEqual`, `PaddingSymmetric`, `PaddingSideBySide` |
 | `Style`, `StyleText` | Styling | `Color`; `Font` (a `.ttf` path), `FontSize`, `FontColor` |
 | `DrawList`, `Cmd`, `Rect`, `Texture` | The output: one quad per `Cmd` | `Add(rect, colour, texture)`, `Reset()`; hosts cache textures by `Texture.Key` |
 | `Input` | Host‑supplied cursor position and viewport size, in framebuffer pixels | Passed to `Draw` and `MouseInBounds`. |

@@ -22,9 +22,10 @@ func (row Row) Draw(drawList *DrawList, input Input) []ClickArea {
 	}
 
 	row.Properties = ApplyLayout(row.Properties)
+	content := ContentBox(row.Properties)
 
 	for i, child := range row.Children {
-		child = child.SetParent(&row.Properties)
+		child = child.SetParent(&content)
 		row.Children[i] = child.Initialize(input, SkipAlignmentHoriz)
 	}
 
@@ -32,11 +33,14 @@ func (row Row) Draw(drawList *DrawList, input Input) []ClickArea {
 		areas = append(areas, area)
 	}
 
-	// Fixed-size children claim their width first
-	availableWidth := row.Properties.Size.Width
-	maxWidth := row.Properties.Size.Width
+	// Margins are empty space beside a child, so every child's left and right
+	// margins come out first, then fixed-size children claim their width
+	availableWidth := content.Size.Width
+	maxWidth := content.Size.Width
 	for _, child := range row.Children {
 		childProps := child.GetProperties()
+		_, right, _, left := pixels(childProps.Margin, content.Size.Width, content.Size.Height)
+		availableWidth -= left + right
 		if childProps.Size.Scale == ScalePixel {
 			availableWidth -= childProps.Size.Width
 		}
@@ -52,10 +56,11 @@ func (row Row) Draw(drawList *DrawList, input Input) []ClickArea {
 		}
 	}
 
-	// Size and place every child in one pass
-	currentX := row.Properties.Center.X - maxWidth/2
+	// Size and place every child in one pass, stepping over its margins
+	currentX := content.Center.X - maxWidth/2
 	for i, child := range row.Children {
 		childProps := child.GetProperties()
+		top, right, bottom, left := pixels(childProps.Margin, content.Size.Width, content.Size.Height)
 
 		pixelWidth := childProps.Size.Width
 		pixelHeight := childProps.Size.Height
@@ -66,10 +71,11 @@ func (row Row) Draw(drawList *DrawList, input Input) []ClickArea {
 			if childrenWidth > 0 {
 				pixelWidth = childProps.Size.Width * availableWidth / childrenWidth
 			}
-			// A relative child fills the row's height
-			pixelHeight = row.Properties.Size.Height
+			// A relative child fills the row's height, less its own margins
+			pixelHeight = content.Size.Height - top - bottom
 		}
 
+		currentX += left
 		row.Children[i] = child.SetProperties(
 			Size{
 				Scale:  ScalePixel,
@@ -78,10 +84,10 @@ func (row Row) Draw(drawList *DrawList, input Input) []ClickArea {
 			},
 			Point{
 				X: currentX + pixelWidth/2,
-				Y: row.Properties.Center.Y,
+				Y: content.Center.Y,
 			},
 		)
-		currentX += pixelWidth
+		currentX += pixelWidth + right
 	}
 
 	for _, child := range row.Children {

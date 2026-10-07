@@ -78,7 +78,7 @@ func TreeHash(element UIElement) uint64 {
 	return h.Sum()
 }
 
-func (p Padding) Hash(h *Hasher) {
+func (p Spacing) Hash(h *Hasher) {
 	h.Bool(bool(p.Scale))
 	h.Int(p.Top)
 	h.Int(p.Right)
@@ -101,6 +101,7 @@ func (p Properties) Hash(h *Hasher) {
 	p.Center.Hash(h)
 	p.Size.Hash(h)
 	h.Uint64(uint64(p.Alignment))
+	p.Margin.Hash(h)
 	p.Padding.Hash(h)
 	h.Uint64(uint64(p.Type))
 	h.Uint64(uint64(p.Skip))

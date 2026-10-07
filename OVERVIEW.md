@@ -67,7 +67,7 @@ translucent dark quad is drawn over it. `Font` is a **path to a `.ttf`**. For
 
 ## 3. Layout
 
-Each widget gets a `Properties{Size, Alignment, Padding}`.
+Each widget gets a `Properties{Size, Alignment, Margin, Padding}`.
 
 | you write | means |
 |---|---|
@@ -75,22 +75,31 @@ Each widget gets a `Properties{Size, Alignment, Padding}`.
 | `Size{ScaleRelative, 30, 100}` | 30 % × 100 % of the parent |
 | no `Size` | fill the parent (the root fills the window) |
 | `Alignment: AlignmentTopLeft` | where to sit inside the parent (default: centre) |
-| `PaddingEqual(ScalePixel, 8)` | shrink by 8 px on every side |
+| `Margin: PaddingEqual(ScalePixel, 8)` | 8 px of empty space **outside** the widget, taken from the parent's space before the widget is sized |
+| `Padding: PaddingEqual(ScalePixel, 8)` | 8 px of space **inside** the widget: the background stays full size, the children are inset |
 
 Every widget resolves itself the same way, from the outside in:
 
 ```mermaid
 flowchart LR
-    P["parent's final rect"] --> R["<b>relative → pixels</b><br/>% of parent"]
-    R --> A["<b>align</b><br/>position inside parent"]
-    A --> PD["<b>pad</b><br/>shrink the rect"]
-    PD --> D["draw background"]
-    D --> C["children use this rect<br/>as their parent"]
+    P["parent's box"] --> M["<b>margin</b><br/>take empty space<br/>off the parent's box"]
+    M --> R["<b>relative → pixels</b><br/>% of what's left"]
+    R --> A["<b>align</b><br/>position in what's left"]
+    A --> D["draw background<br/>+ click area"]
+    A --> PD["<b>padding</b><br/>inset the rect"]
+    PD --> C["children use this rect<br/>as their parent"]
+
+    style D fill:#2d4a22,color:#fff
+    style C fill:#1f3a5f,color:#fff
 ```
 
-> **Padding shrinks the widget itself, background included.** It works like a
-> CSS margin. For a coloured panel with inset content, nest two widgets: an
-> outer one with the colour, and a padded inner one.
+This is how CSS flexbox treats them. A margin never shrinks a widget's
+background; it takes space from the parent. In a `Row` or `Column`, every
+child's margins come out of the space first, and the siblings share what's
+left. Three children at 33 % in a 600 px row, with a 10 px side margin on the
+middle one, are each (600 − 20) / 3 wide. Padding then insets only the children.
+Use `Margin` for gaps between siblings (the example's nav buttons) and
+`Padding` to inset content in a coloured panel (the example's top bar).
 
 ### Row and Column split their space
 
@@ -181,6 +190,7 @@ Each part shows one pattern you can copy:
 | `nav()` | one `Button` per page, built in a loop, with `Function: func() { page = i }`. A spacer keeps the buttons at the top |
 | `heartRow()` | 56×56 pixel `Container`s with `Image`, then a spacer. Two PNG files, so two textures, however many hearts are drawn |
 | `stepper` buttons | callbacks that change `hearts`. The next frame draws a different row |
+| `boxModel()` (Layout page) | two lists of where this window uses margin (space between widgets) and padding (inner space to the edge), built from the named spacing variables. Below them, three same-size squares in one row: one with `Padding` (its colour frames an inset child), one with `Margin` (empty space around it pushes its neighbours away), one with neither. Under them, `loneMargins()`: three parents with one child each (fill, 50 %, 60 px), showing that with no siblings a margin is taken off the parent before the child sizes and centres itself |
 | `gallery()` | the two hover styles: `HoverImage` swap vs. darkening quad |
 | `statusBar()` | shows the previous frame's quad count, so the label doesn't change every frame |
 

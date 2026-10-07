@@ -92,7 +92,7 @@ func topBar(host *Host) ui.UIElement {
 	return ui.Row{
 		Properties: ui.Properties{
 			Size:    ui.Size{Scale: ui.ScaleRelative, Width: 100, Height: 11},
-			Padding: ui.PaddingSymmetric(ui.ScalePixel, 10, 16),
+			Padding: topBarPadding,
 		},
 		Style: ui.Style{Color: panel},
 		Children: []ui.UIElement{
@@ -117,7 +117,7 @@ func body() ui.UIElement {
 	return ui.Row{
 		Properties: ui.Properties{
 			Size:    ui.Size{Scale: ui.ScaleRelative, Width: 100, Height: 82},
-			Padding: ui.PaddingEqual(ui.ScalePixel, 8),
+			Padding: bodyPadding,
 		},
 		Style:    ui.Style{Color: bg},
 		Children: []ui.UIElement{nav(), content(), gallery()},
@@ -136,8 +136,8 @@ func nav() ui.UIElement {
 
 		buttons = append(buttons, ui.Button{
 			Properties: ui.Properties{
-				Size:    ui.Size{Scale: ui.ScaleRelative, Width: 100, Height: 12},
-				Padding: ui.PaddingSymmetric(ui.ScalePixel, 4, 0),
+				Size:   ui.Size{Scale: ui.ScaleRelative, Width: 100, Height: 12},
+				Margin: navButtonMargin,
 			},
 			Style:    ui.Style{Color: fill},
 			Function: func() { page = i },
@@ -150,7 +150,7 @@ func nav() ui.UIElement {
 	return ui.Column{
 		Properties: ui.Properties{
 			Size:    ui.Size{Scale: ui.ScaleRelative, Width: 22, Height: 100},
-			Padding: ui.PaddingEqual(ui.ScalePixel, 6),
+			Padding: panelPadding,
 		},
 		Style:    ui.Style{Color: bg},
 		Children: buttons,
@@ -158,52 +158,208 @@ func nav() ui.UIElement {
 }
 
 func content() ui.UIElement {
+	children := []ui.UIElement{
+		label(pages[page], 30, fg, ui.Size{Scale: ui.ScaleRelative, Width: 100, Height: titleHeight()}),
+	}
+	if pages[page] == "Layout" {
+		children = append(children, boxModel()...)
+	} else {
+		children = append(children, heartsDemo()...)
+	}
+
 	return ui.Column{
 		Properties: ui.Properties{
 			Size:    ui.Size{Scale: ui.ScaleRelative, Width: 56, Height: 100},
-			Padding: ui.PaddingEqual(ui.ScalePixel, 6),
+			Padding: panelPadding,
 		},
-		Style: ui.Style{Color: panel},
+		Style:    ui.Style{Color: panel},
+		Children: children,
+	}
+}
+
+// heartsDemo is the content of every page but Layout: images and buttons that
+// change state
+func heartsDemo() []ui.UIElement {
+	return []ui.UIElement{
+		label(blurb(), 14, muted, ui.Size{Scale: ui.ScaleRelative, Width: 100, Height: 34}),
+
+		// Fixed-size children in a row keep their own size; the trailing
+		// relative spacer takes whatever width is left over
+		ui.Row{
+			Properties: ui.Properties{
+				Size:    ui.Size{Scale: ui.ScaleRelative, Width: 100, Height: 20},
+				Padding: demoRowPadding,
+			},
+			Style:    ui.Style{Color: transparent},
+			Children: heartRow(),
+		},
+
+		ui.Row{
+			Properties: ui.Properties{
+				Size:    ui.Size{Scale: ui.ScaleRelative, Width: 100, Height: 18},
+				Padding: demoRowPadding,
+			},
+			Style: ui.Style{Color: transparent},
+			Children: []ui.UIElement{
+				stepper("- damage", red, func() {
+					if hearts > 0 {
+						hearts--
+					}
+				}),
+				spacer(6, 100),
+				stepper("+ heal", green, func() {
+					if hearts < maxHearts {
+						hearts++
+					}
+				}),
+				spacer(48, 100),
+			},
+		},
+
+		spacer(100, 12),
+	}
+}
+
+// boxModel is the Layout page. Two lists say where this window uses a margin
+// and where it uses padding, read from the same variables the tree is built
+// from. Below them, three identical squares sit side by side on a dark strip:
+// one with padding, one with a margin, one with neither.
+func boxModel() []ui.UIElement {
+	margins := strings.Join([]string{
+		"Margin: space between widgets",
+		"- nav buttons: " + describe(navButtonMargin),
+		"- gallery buttons: " + describe(galleryButtonMargin),
+		"- margin square: " + describe(demoSpacing),
+		"- lone children: " + describe(fillMargin) + ", " + describe(sideMargin),
+		"- their parents: " + describe(parentGap),
+		// Blank lines so both lists have the same height and so the same
+		// top, since text is centred vertically in its box
+		"", "",
+	}, "\n")
+	paddings := strings.Join([]string{
+		"Padding: inner space to the edge",
+		"- top bar: " + describe(topBarPadding),
+		"- status bar: " + describe(statusBarPadding),
+		"- body: " + describe(bodyPadding),
+		"- the three panels: " + describe(panelPadding),
+		"- heart + button rows: " + describe(demoRowPadding),
+		"- text labels: " + describe(labelPadding),
+		"- padding square: " + describe(demoSpacing),
+	}, "\n")
+
+	lists := ui.Row{
+		Properties: ui.Properties{Size: ui.Size{Scale: ui.ScaleRelative, Width: 100, Height: 32}},
+		Style:      ui.Style{Color: transparent},
 		Children: []ui.UIElement{
-			label(pages[page], 30, fg, ui.Size{Scale: ui.ScaleRelative, Width: 100, Height: 16}),
-			label(blurb(), 14, muted, ui.Size{Scale: ui.ScaleRelative, Width: 100, Height: 34}),
-
-			// Fixed-size children in a row keep their own size; the trailing
-			// relative spacer takes whatever width is left over
-			ui.Row{
-				Properties: ui.Properties{
-					Size:    ui.Size{Scale: ui.ScaleRelative, Width: 100, Height: 20},
-					Padding: ui.PaddingEqual(ui.ScalePixel, 8),
-				},
-				Style:    ui.Style{Color: transparent},
-				Children: heartRow(),
-			},
-
-			ui.Row{
-				Properties: ui.Properties{
-					Size:    ui.Size{Scale: ui.ScaleRelative, Width: 100, Height: 18},
-					Padding: ui.PaddingEqual(ui.ScalePixel, 8),
-				},
-				Style: ui.Style{Color: transparent},
-				Children: []ui.UIElement{
-					stepper("- damage", red, func() {
-						if hearts > 0 {
-							hearts--
-						}
-					}),
-					spacer(6, 100),
-					stepper("+ heal", green, func() {
-						if hearts < maxHearts {
-							hearts++
-						}
-					}),
-					spacer(48, 100),
-				},
-			},
-
-			spacer(100, 12),
+			label(margins, 14, muted, ui.Size{Scale: ui.ScaleRelative, Width: 1, Height: 100}),
+			label(paddings, 14, muted, ui.Size{Scale: ui.ScaleRelative, Width: 1, Height: 100}),
 		},
 	}
+
+	// The squares are fixed-size, so the strip's leftover width goes to the
+	// trailing spacer and the squares keep their size whatever the window does
+	squares := ui.Row{
+		Properties: ui.Properties{Size: ui.Size{Scale: ui.ScaleRelative, Width: 100, Height: 24}},
+		Style:      ui.Style{Color: bg},
+		Children: []ui.UIElement{
+			square("padding", blue, ui.Spacing{}, demoSpacing),
+			square("margin", green, demoSpacing, ui.Spacing{}),
+			square("none", red, ui.Spacing{}, ui.Spacing{}),
+			// spacer(100, 100),
+		},
+	}
+
+	return []ui.UIElement{
+		lists,
+		squares,
+		label(strings.Join([]string{
+			"Padding (blue) insets the child; margin (green) pushes the",
+			"neighbours away. Hover: only the squares react, never the gaps.",
+		}, "\n"), 14, muted, ui.Size{Scale: ui.ScaleRelative, Width: 100, Height: 8}),
+		loneMargins(),
+		label("No siblings: the margin is taken off the parent before sizing.", 14, muted,
+			ui.Size{Scale: ui.ScaleRelative, Width: 100, Height: 5}),
+	}
+}
+
+// loneMargins shows a margin with no siblings to push: each dark parent holds
+// one green child, which sizes and centres itself in what the margin leaves
+func loneMargins() ui.UIElement {
+	cases := []struct {
+		caption string
+		size    ui.Size
+		margin  ui.Spacing
+	}{
+		{"fill, " + describe(fillMargin), ui.Size{}, fillMargin},
+		{"50%, " + describe(sideMargin), ui.Size{Scale: ui.ScaleRelative, Width: 50, Height: 50}, sideMargin},
+		{"60 px, " + describe(sideMargin), ui.Size{Scale: ui.ScalePixel, Width: 60, Height: 60}, sideMargin},
+	}
+
+	captions := make([]ui.UIElement, 0, len(cases))
+	parents := make([]ui.UIElement, 0, len(cases))
+	for _, c := range cases {
+		cell := ui.Properties{
+			Size:   ui.Size{Scale: ui.ScaleRelative, Width: 1, Height: 100},
+			Margin: parentGap,
+		}
+		captions = append(captions, ui.Container{
+			Properties: cell,
+			Style:      ui.Style{Color: transparent},
+			Child: ui.Text{
+				StyleText: ui.StyleText{Font: asset(font), FontSize: 13, FontColor: fg},
+				Content:   c.caption,
+			},
+		})
+		parents = append(parents, ui.Container{
+			Properties: cell,
+			Style:      ui.Style{Color: bg},
+			Child: ui.Container{
+				Properties: ui.Properties{Size: c.size, Margin: c.margin},
+				Style:      ui.Style{Color: green},
+			},
+		})
+	}
+
+	return ui.Column{
+		Properties: ui.Properties{Size: ui.Size{Scale: ui.ScaleRelative, Width: 100, Height: 19}},
+		Style:      ui.Style{Color: transparent},
+		Children: []ui.UIElement{
+			ui.Row{
+				Properties: ui.Properties{Size: ui.Size{Scale: ui.ScaleRelative, Width: 100, Height: 25}},
+				Style:      ui.Style{Color: transparent},
+				Children:   captions,
+			},
+			ui.Row{
+				Properties: ui.Properties{Size: ui.Size{Scale: ui.ScaleRelative, Width: 100, Height: 75}},
+				Style:      ui.Style{Color: transparent},
+				Children:   parents,
+			},
+		},
+	}
+}
+
+// square is a fixed-size clickable box in colour c holding a darker child with
+// its name, so padding shows as a band of c around the child and a margin as
+// empty strip around the whole square
+func square(name string, c color.RGBA, margin, padding ui.Spacing) ui.UIElement {
+	return ui.Button{
+		Properties: ui.Properties{
+			Size:    ui.Size{Scale: ui.ScaleRelative, Width: 33, Height: 120},
+			Margin:  margin,
+			Padding: padding,
+		},
+		Style:    ui.Style{Color: c},
+		Function: func() { clicks++ },
+		Child: ui.Container{
+			Style: ui.Style{Color: shade(c)},
+			Child: centeredLabel(name, 14, fg),
+		},
+	}
+}
+
+// shade darkens c, for a child drawn inside a box of colour c
+func shade(c color.RGBA) color.RGBA {
+	return color.RGBA{c.R / 2, c.G / 2, c.B / 2, c.A}
 }
 
 func heartRow() []ui.UIElement {
@@ -229,7 +385,7 @@ func gallery() ui.UIElement {
 	return ui.Column{
 		Properties: ui.Properties{
 			Size:    ui.Size{Scale: ui.ScaleRelative, Width: 22, Height: 100},
-			Padding: ui.PaddingEqual(ui.ScalePixel, 6),
+			Padding: panelPadding,
 		},
 		Style: ui.Style{Color: bg},
 		Children: []ui.UIElement{
@@ -238,8 +394,8 @@ func gallery() ui.UIElement {
 			// A button with a dedicated hover image swaps the whole texture
 			ui.Button{
 				Properties: ui.Properties{
-					Size:    ui.Size{Scale: ui.ScaleRelative, Width: 100, Height: 20},
-					Padding: ui.PaddingEqual(ui.ScalePixel, 4),
+					Size:   ui.Size{Scale: ui.ScaleRelative, Width: 100, Height: 20},
+					Margin: galleryButtonMargin,
 				},
 				Image:      asset("white_on_black.png"),
 				HoverImage: asset("black_on_white.png"),
@@ -253,8 +409,8 @@ func gallery() ui.UIElement {
 			// first -- a tint costs a quad, not a texture
 			ui.Button{
 				Properties: ui.Properties{
-					Size:    ui.Size{Scale: ui.ScaleRelative, Width: 100, Height: 20},
-					Padding: ui.PaddingEqual(ui.ScalePixel, 4),
+					Size:   ui.Size{Scale: ui.ScaleRelative, Width: 100, Height: 20},
+					Margin: galleryButtonMargin,
 				},
 				Image:    asset("button.png"),
 				Function: func() { clicks++ },
@@ -276,7 +432,7 @@ func statusBar(quads int) ui.UIElement {
 	return ui.Row{
 		Properties: ui.Properties{
 			Size:    ui.Size{Scale: ui.ScaleRelative, Width: 100, Height: 7},
-			Padding: ui.PaddingSymmetric(ui.ScalePixel, 0, 16),
+			Padding: statusBarPadding,
 		},
 		Style: ui.Style{Color: panel},
 		Children: []ui.UIElement{
@@ -296,7 +452,7 @@ func label(content string, size int, col color.Color, box ui.Size) ui.UIElement 
 		Properties: ui.Properties{Size: box},
 		Style:      ui.Style{Color: transparent},
 		Child: ui.Text{
-			Properties: ui.Properties{Padding: ui.PaddingSymmetric(ui.ScalePixel, 0, 10)},
+			Properties: ui.Properties{Padding: labelPadding},
 			StyleText:  ui.StyleText{Font: asset(font), FontSize: size, FontColor: col},
 			Content:    content,
 		},
@@ -333,6 +489,59 @@ func spacer(width, height int) ui.UIElement {
 		Properties: ui.Properties{Size: ui.Size{Scale: ui.ScaleRelative, Width: width, Height: height}},
 		Style:      ui.Style{Color: transparent},
 	}
+}
+
+// The spacing used across the tree. They are named so the Layout page can list
+// them: its text is built from these values, so it cannot drift from the UI.
+var (
+	topBarPadding       = ui.PaddingSymmetric(ui.ScalePixel, 10, 16)
+	statusBarPadding    = ui.PaddingSymmetric(ui.ScalePixel, 0, 16)
+	bodyPadding         = ui.PaddingEqual(ui.ScalePixel, 8)
+	panelPadding        = ui.PaddingEqual(ui.ScalePixel, 6)
+	demoRowPadding      = ui.PaddingEqual(ui.ScalePixel, 8)
+	labelPadding        = ui.PaddingSymmetric(ui.ScalePixel, 0, 10)
+	navButtonMargin     = ui.PaddingSymmetric(ui.ScalePixel, 4, 0)
+	galleryButtonMargin = ui.PaddingEqual(ui.ScalePixel, 4)
+	demoSpacing         = ui.PaddingEqual(ui.ScalePixel, 20)
+	fillMargin          = ui.PaddingEqual(ui.ScalePixel, 10)
+	sideMargin          = ui.PaddingSideBySide(ui.ScalePixel, 0, 0, 0, 40)
+	parentGap           = ui.PaddingSymmetric(ui.ScalePixel, 0, 6)
+)
+
+// describe renders a pixel Spacing compactly: "8 px" when every side matches,
+// "10 px v, 16 px h" when it is symmetric, the non-zero sides by name otherwise
+func describe(p ui.Spacing) string {
+	if p.Top == p.Bottom && p.Left == p.Right {
+		if p.Top == p.Left {
+			return fmt.Sprintf("%d px", p.Top)
+		}
+		parts := []string{}
+		if p.Top != 0 {
+			parts = append(parts, fmt.Sprintf("%d px v", p.Top))
+		}
+		if p.Left != 0 {
+			parts = append(parts, fmt.Sprintf("%d px h", p.Left))
+		}
+		return strings.Join(parts, ", ")
+	}
+	parts := []string{}
+	for _, side := range []struct {
+		px   int
+		name string
+	}{{p.Top, "top"}, {p.Right, "right"}, {p.Bottom, "bottom"}, {p.Left, "left"}} {
+		if side.px != 0 {
+			parts = append(parts, fmt.Sprintf("%d px %s", side.px, side.name))
+		}
+	}
+	return strings.Join(parts, ", ")
+}
+
+// titleHeight leaves the Layout page more room for its two lists
+func titleHeight() int {
+	if pages[page] == "Layout" {
+		return 12
+	}
+	return 16
 }
 
 func blurb() string {

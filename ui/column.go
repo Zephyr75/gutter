@@ -22,9 +22,10 @@ func (column Column) Draw(drawList *DrawList, input Input) []ClickArea {
 	}
 
 	column.Properties = ApplyLayout(column.Properties)
+	content := ContentBox(column.Properties)
 
 	for i, child := range column.Children {
-		child = child.SetParent(&column.Properties)
+		child = child.SetParent(&content)
 		column.Children[i] = child.Initialize(input, SkipAlignmentVert)
 	}
 
@@ -32,11 +33,14 @@ func (column Column) Draw(drawList *DrawList, input Input) []ClickArea {
 		areas = append(areas, area)
 	}
 
-	// Fixed-size children claim their height first
-	availableHeight := column.Properties.Size.Height
-	maxHeight := column.Properties.Size.Height
+	// Margins are empty space beside a child, so every child's top and bottom
+	// margins come out first, then fixed-size children claim their height
+	availableHeight := content.Size.Height
+	maxHeight := content.Size.Height
 	for _, child := range column.Children {
 		childProps := child.GetProperties()
+		top, _, bottom, _ := pixels(childProps.Margin, content.Size.Width, content.Size.Height)
+		availableHeight -= top + bottom
 		if childProps.Size.Scale == ScalePixel {
 			availableHeight -= childProps.Size.Height
 		}
@@ -52,10 +56,11 @@ func (column Column) Draw(drawList *DrawList, input Input) []ClickArea {
 		}
 	}
 
-	// Size and place every child in one pass
-	currentY := column.Properties.Center.Y - maxHeight/2
+	// Size and place every child in one pass, stepping over its margins
+	currentY := content.Center.Y - maxHeight/2
 	for i, child := range column.Children {
 		childProps := child.GetProperties()
+		top, right, bottom, left := pixels(childProps.Margin, content.Size.Width, content.Size.Height)
 
 		pixelWidth := childProps.Size.Width
 		pixelHeight := childProps.Size.Height
@@ -66,10 +71,11 @@ func (column Column) Draw(drawList *DrawList, input Input) []ClickArea {
 			if childrenHeight > 0 {
 				pixelHeight = childProps.Size.Height * availableHeight / childrenHeight
 			}
-			// A relative child fills the column's width
-			pixelWidth = column.Properties.Size.Width
+			// A relative child fills the column's width, less its own margins
+			pixelWidth = content.Size.Width - left - right
 		}
 
+		currentY += top
 		column.Children[i] = child.SetProperties(
 			Size{
 				Scale:  ScalePixel,
@@ -77,11 +83,11 @@ func (column Column) Draw(drawList *DrawList, input Input) []ClickArea {
 				Height: pixelHeight,
 			},
 			Point{
-				X: column.Properties.Center.X,
+				X: content.Center.X,
 				Y: currentY + pixelHeight/2,
 			},
 		)
-		currentY += pixelHeight
+		currentY += pixelHeight + bottom
 	}
 
 	for _, child := range column.Children {

@@ -28,7 +28,8 @@ func (text Text) Draw(dl *DrawList, in Input) []ClickArea {
 		text = text.Initialize(in, SkipAlignmentNone).(Text)
 	}
 
-	text.Properties = ApplyLayout(text.Properties)
+	// Text paints no background, so its padding just insets the string
+	text.Properties = ContentBox(ApplyLayout(text.Properties))
 
 	if text.Content == "" {
 		return nil

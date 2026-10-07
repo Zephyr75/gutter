@@ -30,6 +30,15 @@
   `pickFormat`. go-vulkan's `BINDINGS_OVERDRIVE_GUTTER.md` now records which of
   the two callers needs each binding.
 
+- [x] **Real padding, plus margin**
+  `Padding` used to shrink the widget's own rect, background and click area
+  included, which is a margin. That behaviour is now `Properties.Margin`.
+  `Padding` keeps the full rect for the background and click area and insets
+  only the children (`ContentBox`). `Margin` is empty space outside the widget,
+  taken from the parent's space before the widget is sized: in a `Row`/`Column`
+  every child's margins come out first and the siblings share the rest, as in
+  CSS flexbox.
+
 - [x] **Docs match the code**
   README no longer points at unexported helpers or miscounts the interface.
   `OVERVIEW.md` walks through the library and the example.
@@ -73,8 +82,7 @@
   centred on the origin cannot say so.
 
 - [ ] **Clean up**
-  Deprecated `ApplyPadding`/`ApplyAlignment`/`ApplyRelative` wrappers; `ToString`
-  methods superseded by `Hash`; `textKey` and the `Hasher` sum encode the same
+  `ToString` methods superseded by `Hash`; `textKey` and the `Hasher` sum encode the same
   five fields twice; fully transparent `Cmd`s still cost the host a draw call;
   `UIImage` has no widget behind it (images are a field on the other widgets).
 
