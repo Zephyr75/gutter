@@ -466,7 +466,7 @@ func centeredLabel(content string, size int, col color.Color) ui.UIElement {
 		pad = 4
 	}
 	return ui.Text{
-		Properties: ui.Properties{Padding: ui.PaddingSymmetric(ui.ScalePixel, 0, pad)},
+		Properties: ui.Properties{Padding: ui.SpacingSymmetric(ui.ScalePixel, 0, pad)},
 		StyleText:  ui.StyleText{Font: asset(font), FontSize: size, FontColor: col},
 		Content:    content,
 	}
@@ -494,18 +494,18 @@ func spacer(width, height int) ui.UIElement {
 // The spacing used across the tree. They are named so the Layout page can list
 // them: its text is built from these values, so it cannot drift from the UI.
 var (
-	topBarPadding       = ui.PaddingSymmetric(ui.ScalePixel, 10, 16)
-	statusBarPadding    = ui.PaddingSymmetric(ui.ScalePixel, 0, 16)
-	bodyPadding         = ui.PaddingEqual(ui.ScalePixel, 8)
-	panelPadding        = ui.PaddingEqual(ui.ScalePixel, 6)
-	demoRowPadding      = ui.PaddingEqual(ui.ScalePixel, 8)
-	labelPadding        = ui.PaddingSymmetric(ui.ScalePixel, 0, 10)
-	navButtonMargin     = ui.PaddingSymmetric(ui.ScalePixel, 4, 0)
-	galleryButtonMargin = ui.PaddingEqual(ui.ScalePixel, 4)
-	demoSpacing         = ui.PaddingEqual(ui.ScalePixel, 20)
-	fillMargin          = ui.PaddingEqual(ui.ScalePixel, 10)
-	sideMargin          = ui.PaddingSideBySide(ui.ScalePixel, 0, 0, 0, 40)
-	parentGap           = ui.PaddingSymmetric(ui.ScalePixel, 0, 6)
+	topBarPadding       = ui.SpacingSymmetric(ui.ScalePixel, 10, 16)
+	statusBarPadding    = ui.SpacingSymmetric(ui.ScalePixel, 0, 16)
+	bodyPadding         = ui.SpacingEqual(ui.ScalePixel, 8)
+	panelPadding        = ui.SpacingEqual(ui.ScalePixel, 6)
+	demoRowPadding      = ui.SpacingEqual(ui.ScalePixel, 8)
+	labelPadding        = ui.SpacingSymmetric(ui.ScalePixel, 0, 10)
+	navButtonMargin     = ui.SpacingSymmetric(ui.ScalePixel, 4, 0)
+	galleryButtonMargin = ui.SpacingEqual(ui.ScalePixel, 4)
+	demoSpacing         = ui.SpacingEqual(ui.ScalePixel, 20)
+	fillMargin          = ui.SpacingEqual(ui.ScalePixel, 10)
+	sideMargin          = ui.SpacingSides(ui.ScalePixel, 0, 0, 0, 40)
+	parentGap           = ui.SpacingSymmetric(ui.ScalePixel, 0, 6)
 )
 
 // describe renders a pixel Spacing compactly: "8 px" when every side matches,

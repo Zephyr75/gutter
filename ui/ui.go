@@ -15,6 +15,9 @@ const (
 /*
 Spacing
 */
+
+// Spacing is a distance per side, used both for a widget's Margin (space
+// between widgets) and its Padding (inner space to the edge)
 type Spacing struct {
 	Scale  ScaleType
 	Top    int
@@ -23,16 +26,19 @@ type Spacing struct {
 	Left   int
 }
 
-func PaddingEqual(scale ScaleType, padding int) Spacing {
+// SpacingEqual is the same distance on every side
+func SpacingEqual(scale ScaleType, spacing int) Spacing {
 	return Spacing{
 		Scale:  scale,
-		Top:    padding,
-		Right:  padding,
-		Bottom: padding,
-		Left:   padding,
+		Top:    spacing,
+		Right:  spacing,
+		Bottom: spacing,
+		Left:   spacing,
 	}
 }
-func PaddingSymmetric(scale ScaleType, vertical, horizontal int) Spacing {
+
+// SpacingSymmetric is one distance for top and bottom, another for the sides
+func SpacingSymmetric(scale ScaleType, vertical, horizontal int) Spacing {
 	return Spacing{
 		Scale:  scale,
 		Top:    vertical,
@@ -41,7 +47,9 @@ func PaddingSymmetric(scale ScaleType, vertical, horizontal int) Spacing {
 		Left:   horizontal,
 	}
 }
-func PaddingSideBySide(scale ScaleType, top, right, bottom, left int) Spacing {
+
+// SpacingSides sets each side, in CSS order: top, right, bottom, left
+func SpacingSides(scale ScaleType, top, right, bottom, left int) Spacing {
 	return Spacing{
 		Scale:  scale,
 		Top:    top,
@@ -177,7 +185,7 @@ func DefaultProperties(props Properties, in Input, skip SkipAlignment, uitype UI
 			Center:      Point{vw / 2, vh / 2},
 			Size:        Size{ScalePixel, vw, vh},
 			Alignment:   AlignmentCenter,
-			Padding:     PaddingEqual(ScalePixel, 0),
+			Padding:     SpacingEqual(ScalePixel, 0),
 			Parent:      nil,
 			Initialized: true,
 			Skip:        skip,

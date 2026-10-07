@@ -75,8 +75,8 @@ Each widget gets a `Properties{Size, Alignment, Margin, Padding}`.
 | `Size{ScaleRelative, 30, 100}` | 30 % × 100 % of the parent |
 | no `Size` | fill the parent (the root fills the window) |
 | `Alignment: AlignmentTopLeft` | where to sit inside the parent (default: centre) |
-| `Margin: PaddingEqual(ScalePixel, 8)` | 8 px of empty space **outside** the widget, taken from the parent's space before the widget is sized |
-| `Padding: PaddingEqual(ScalePixel, 8)` | 8 px of space **inside** the widget: the background stays full size, the children are inset |
+| `Margin: SpacingEqual(ScalePixel, 8)` | 8 px of empty space **outside** the widget, taken from the parent's space before the widget is sized |
+| `Padding: SpacingEqual(ScalePixel, 8)` | 8 px of space **inside** the widget: the background stays full size, the children are inset |
 
 Every widget resolves itself the same way, from the outside in:
 

@@ -37,7 +37,7 @@ The package exports a small set of types and helper functions. The table below s
 |------|---------|-------------|
 | `UIElement` | Interface that every widget implements | `Draw`, `Initialize`, `SetParent`, `SetProperties`, `GetProperties`, `Hash`, `ToString` |
 | `Row`, `Column`, `Container`, `Button`, `Text` | Concrete widgets | Constructed as plain structs (see examples). |
-| `Properties`, `Size`, `Padding`, `Alignment`, `Point` | Layout | `ScaleRelative` / `ScalePixel` for sizes; `Margin` (space outside, taken from the parent) and `Padding` (space inside) both take `PaddingEqual`, `PaddingSymmetric`, `PaddingSideBySide` |
+| `Properties`, `Size`, `Spacing`, `Alignment`, `Point` | Layout | `ScaleRelative` / `ScalePixel` for sizes; `Margin` (space outside, taken from the parent) and `Padding` (space inside) both take `SpacingEqual`, `SpacingSymmetric`, `SpacingSides` |
 | `Style`, `StyleText` | Styling | `Color`; `Font` (a `.ttf` path), `FontSize`, `FontColor` |
 | `DrawList`, `Cmd`, `Rect`, `Texture` | The output: one quad per `Cmd` | `Add(rect, colour, texture)`, `Reset()`; hosts cache textures by `Texture.Key` |
 | `Input` | Host‑supplied cursor position and viewport size, in framebuffer pixels | Passed to `Draw` and `MouseInBounds`. |
