@@ -43,17 +43,15 @@
   README no longer points at unexported helpers or miscounts the interface.
   `OVERVIEW.md` walks through the library and the example.
 
-## Open
+- [x] **Wire overdrive to the draw list**
+  Overdrive's `core/ui.go` draws one unit quad per `Cmd`: the model matrix
+  stretches it onto `Cmd.Rect`, the tint rides in `MatDiffuse` + `MatMetallic`,
+  and textures are uploaded once per `Key` before the frame and destroyed after
+  120 unused frames, so a changing label does not leak slots. About 0.05 ms of
+  CPU per frame for a 36-`Cmd` HUD. Overdrive reaches gutter through a
+  `replace` until a release is tagged.
 
-- [ ] **Wire overdrive to the draw list**
-  Overdrive still pins gutter `v0.1.2` and the old `ui.Area` /
-  window-in-`Draw` API, so it needs a new gutter tag first. Then only
-  `core/ui.go` and `ui.slang`. Unit quad `(0,0)..(1,1)` instead of a
-  clip-space fullscreen one; per `Cmd` look up `cache[Tex.Key]`, build a `Model`
-  onto `Cmd.Rect`, set the tint, one `Draw` each. `DrawUniforms` is size-locked,
-  so reuse `MatDiffuse` + `MatMetallic` for the tint rather than adding a field.
-  Watch the two traps: bindless slots leak on any texture resize (hence gutter's
-  64-px width bucketing), and wrong quad winding vanishes silently.
+## Open
 
 - [ ] **Stop boxing every widget in the layout walk**
   `SetProperties`, `SetParent` and `Initialize` return `UIElement` by value, so
